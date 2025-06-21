@@ -11,6 +11,31 @@ from config import Config
 from database import init_db, get_task, create_task, update_strategy, update_progress
 
 
+def delete_task(origin_id: int) -> None:
+    """
+    Delete a sync task from the database.
+    
+    Args:
+        origin_id: The origin chat ID.
+    """
+    import sqlite3
+    from pathlib import Path
+    
+    db_path = Path("data/clonechat.db")
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM SyncTasks WHERE origin_chat_id = ?", (origin_id,))
+        conn.commit()
+        logging.info(f"Deleted task for origin_chat_id={origin_id}")
+    except sqlite3.Error as e:
+        logging.error(f"Error deleting task: {e}")
+        raise
+    finally:
+        conn.close()
+
+
 class ClonerEngine:
     """
     Main cloning engine that handles automatic strategy detection and chat synchronization.
@@ -31,18 +56,25 @@ class ClonerEngine:
         # Initialize database
         init_db()
         
-    def get_or_create_sync_task(self, origin_chat_id: int) -> Dict[str, Any]:
+    def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
         """
         Get existing sync task or create a new one with destination channel.
         
         Args:
             origin_chat_id: The origin chat ID.
+            restart: If True, delete existing task and create new one.
             
         Returns:
             Dict containing task information.
         """
         # Check if task already exists
         existing_task = get_task(origin_chat_id)
+        
+        if restart and existing_task:
+            self.logger.info(f"Restart mode: deleting existing task for origin_chat_id={origin_chat_id}")
+            delete_task(origin_chat_id)
+            existing_task = None
+        
         if existing_task:
             self.logger.info(f"Found existing task for origin_chat_id={origin_chat_id}")
             return existing_task
@@ -144,15 +176,16 @@ class ClonerEngine:
             self.logger.error(f"Error creating destination channel: {e}")
             raise
     
-    def sync_chat(self, origin_chat_id: int) -> None:
+    def sync_chat(self, origin_chat_id: int, restart: bool = False) -> None:
         """
         Main synchronization loop for a chat.
         
         Args:
             origin_chat_id: The origin chat ID to sync.
+            restart: If True, restart from the beginning (delete existing task).
         """
         # Get or create sync task
-        task = self.get_or_create_sync_task(origin_chat_id)
+        task = self.get_or_create_sync_task(origin_chat_id, restart=restart)
         
         origin_chat_id = task['origin_chat_id']
         dest_chat_id = task['destination_chat_id']

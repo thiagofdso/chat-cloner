@@ -17,6 +17,10 @@ steps.md
 contexto.md
 clonechat/
 
+# Example files
+*_example.txt
+chats_*.txt
+
 # Python
 __pycache__/
 *.py[cod]
