@@ -1,0 +1,63 @@
+# Environment variables
+.env
+config.ini
+
+# Database
+data/clonechat.db
+
+# Downloads
+data/downloads/
+
+# Telegram session files
+*.session
+
+# Documentation and old project files
+spec.md
+steps.md
+contexto.md
+clonechat/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db 
