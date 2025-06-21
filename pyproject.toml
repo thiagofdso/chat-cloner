@@ -1,6 +1,6 @@
 [project]
 name = "clonechat"
-version = "0.1.0"
+version = "2.0.0"
 description = "Telegram chat cloning tool with advanced features"
 authors = [
     {name = "Thiago Oliveira",email = "thiagofdso.ufpa@gmail.com"}
