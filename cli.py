@@ -1,22 +1,20 @@
 """
 CLI interface for Clonechat using Typer.
 """
+import asyncio
 import typer
 from typing import Optional
-import logging
 from pathlib import Path
 from pyrogram import Client
 
 from config import load_config, Config
 from database import init_db, get_task, create_task, update_strategy, update_progress
 from engine import ClonerEngine
+from logging_config import setup_logging, get_logger, log_operation_start, log_operation_success, log_operation_error
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Setup logging
+setup_logging(log_level="INFO", enable_console=True, enable_file=True)
+logger = get_logger(__name__)
 
 app = typer.Typer(
     name="clonechat",
@@ -59,11 +57,11 @@ def read_chat_ids_from_file(file_path: str) -> list[int]:
     if not chat_ids:
         raise ValueError(f"Nenhum ID válido encontrado no arquivo: {file_path}")
     
-    logger.info(f"Lidos {len(chat_ids)} IDs do arquivo: {file_path}")
+    logger.info(f"📄 Lidos {len(chat_ids)} IDs do arquivo: {file_path}")
     return chat_ids
 
 
-def process_single_chat(engine: ClonerEngine, chat_id: int, restart: bool) -> bool:
+async def process_single_chat(engine: ClonerEngine, chat_id: int, restart: bool) -> bool:
     """
     Process a single chat synchronization.
     
@@ -76,13 +74,87 @@ def process_single_chat(engine: ClonerEngine, chat_id: int, restart: bool) -> bo
         True if successful, False otherwise.
     """
     try:
-        logger.info(f"Processando chat {chat_id}")
-        engine.sync_chat(chat_id, restart=restart)
-        logger.info(f"Chat {chat_id} processado com sucesso")
+        log_operation_start(logger, "process_single_chat", chat_id=chat_id, restart=restart)
+        await engine.sync_chat(chat_id, restart=restart)
+        log_operation_success(logger, "process_single_chat", chat_id=chat_id)
         return True
     except Exception as e:
-        logger.error(f"Erro ao processar chat {chat_id}: {e}")
+        log_operation_error(logger, "process_single_chat", e, chat_id=chat_id)
         return False
+
+
+async def run_sync_async(
+    origin: Optional[int],
+    batch: bool,
+    source: Optional[str],
+    restart: bool
+) -> None:
+    """
+    Async wrapper for the sync operation.
+    
+    Args:
+        origin: Origin chat ID.
+        batch: Whether to process in batch mode.
+        source: Source file for batch processing.
+        restart: Whether to restart the sync.
+    """
+    try:
+        log_operation_start(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
+        
+        # Carregar configurações
+        config = load_config()
+        logger.info("⚙️ Configurações carregadas com sucesso")
+        
+        # Inicializar cliente Pyrogram
+        client = Client(
+            "clonechat_user",
+            api_id=config.telegram_api_id,
+            api_hash=config.telegram_api_hash
+        )
+        
+        # Inicializar banco de dados
+        init_db()
+        logger.info("💾 Banco de dados inicializado")
+        
+        # Inicializar motor de clonagem
+        engine = ClonerEngine(config, client)
+        logger.info("🚀 Motor de clonagem inicializado")
+        
+        if batch:
+            # Processar múltiplos chats
+            logger.info(f"📦 Iniciando processamento em lote do arquivo: {source}")
+            chat_ids = read_chat_ids_from_file(source)  # type: ignore
+            
+            successful = 0
+            failed = 0
+            
+            for chat_id in chat_ids:
+                if await process_single_chat(engine, chat_id, restart):
+                    successful += 1
+                else:
+                    failed += 1
+            
+            logger.info(f"📊 Processamento em lote concluído: {successful} sucessos, {failed} falhas")
+            
+            if failed > 0:
+                raise typer.Exit(1)
+        else:
+            # Processar chat individual
+            logger.info(f"🎯 Iniciando sincronização do chat {origin}")
+            
+            if restart:
+                logger.info("🔄 Modo restart ativado - iniciando nova clonagem")
+            else:
+                logger.info("📋 Verificando tarefa existente no banco de dados")
+            
+            await engine.sync_chat(origin, restart=restart)  # type: ignore
+            logger.info("✅ Sincronização concluída com sucesso!")
+        
+        log_operation_success(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
+        
+    except Exception as e:
+        log_operation_error(logger, "run_sync_async", e, origin=origin, batch=batch, restart=restart)
+        raise typer.Exit(1)
 
 
 @app.command()
@@ -122,6 +194,8 @@ def sync(
     - Batch: python main.py sync --batch --source chats.txt
     """
     try:
+        log_operation_start(logger, "sync_command", origin=origin, batch=batch, restart=restart)
+        
         # Validar argumentos
         if batch:
             if not source:
@@ -134,57 +208,13 @@ def sync(
             if source:
                 raise typer.BadParameter("--source só deve ser usado com --batch")
         
-        # Carregar configurações
-        config = load_config()
-        logger.info("Configurações carregadas com sucesso")
+        # Executar operação assíncrona
+        asyncio.run(run_sync_async(origin, batch, source, restart))
         
-        # Inicializar cliente Pyrogram
-        client = Client(
-            "clonechat_user",
-            api_id=config.telegram_api_id,
-            api_hash=config.telegram_api_hash
-        )
-        
-        # Inicializar banco de dados
-        init_db()
-        logger.info("Banco de dados inicializado")
-        
-        # Inicializar motor de clonagem
-        engine = ClonerEngine(config, client)
-        logger.info("Motor de clonagem inicializado")
-        
-        if batch:
-            # Processar múltiplos chats
-            logger.info(f"Iniciando processamento em lote do arquivo: {source}")
-            chat_ids = read_chat_ids_from_file(source)  # type: ignore
-            
-            successful = 0
-            failed = 0
-            
-            for chat_id in chat_ids:
-                if process_single_chat(engine, chat_id, restart):
-                    successful += 1
-                else:
-                    failed += 1
-            
-            logger.info(f"Processamento em lote concluído: {successful} sucessos, {failed} falhas")
-            
-            if failed > 0:
-                raise typer.Exit(1)
-        else:
-            # Processar chat individual
-            logger.info(f"Iniciando sincronização do chat {origin}")
-            
-            if restart:
-                logger.info("Modo restart ativado - iniciando nova clonagem")
-            else:
-                logger.info("Verificando tarefa existente no banco de dados")
-            
-            engine.sync_chat(origin, restart=restart)  # type: ignore
-            logger.info("Sincronização concluída com sucesso!")
+        log_operation_success(logger, "sync_command", origin=origin, batch=batch, restart=restart)
         
     except Exception as e:
-        logger.error(f"Erro durante a sincronização: {e}")
+        log_operation_error(logger, "sync_command", e, origin=origin, batch=batch, restart=restart)
         raise typer.Exit(1)
 
 

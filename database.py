@@ -2,9 +2,18 @@
 Database layer for Clonechat.
 """
 import sqlite3
-import logging
 from typing import Optional, Dict, Any
 from pathlib import Path
+
+from logging_config import (
+    get_logger, 
+    log_database_operation, 
+    log_operation_error,
+    log_operation_start,
+    log_operation_success
+)
+
+logger = get_logger(__name__)
 
 
 def create_connection() -> sqlite3.Connection:
@@ -26,6 +35,8 @@ def init_db() -> None:
     """
     Initialize the database with required tables.
     """
+    log_operation_start(logger, "init_db")
+    
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -41,10 +52,11 @@ def init_db() -> None:
         """)
         
         conn.commit()
-        logging.info("Database initialized successfully")
+        log_database_operation(logger, "init_db", table="SyncTasks")
+        log_operation_success(logger, "init_db")
         
     except sqlite3.Error as e:
-        logging.error("Error initializing database: %s", e)
+        log_operation_error(logger, "init_db", e)
         raise
     finally:
         conn.close()
@@ -60,6 +72,8 @@ def get_task(origin_id: int) -> Optional[Dict[str, Any]]:
     Returns:
         Optional[Dict[str, Any]]: Task data if found, None otherwise.
     """
+    log_database_operation(logger, "get_task", origin_chat_id=origin_id)
+    
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -71,11 +85,15 @@ def get_task(origin_id: int) -> Optional[Dict[str, Any]]:
         
         row = cursor.fetchone()
         if row:
-            return dict(row)
+            task_data = dict(row)
+            log_database_operation(logger, "get_task_success", origin_chat_id=origin_id, task_found=True)
+            return task_data
+        
+        log_database_operation(logger, "get_task_not_found", origin_chat_id=origin_id)
         return None
         
     except sqlite3.Error as e:
-        logging.error("Error getting task: %s", e)
+        log_operation_error(logger, "get_task", e, origin_chat_id=origin_id)
         raise
     finally:
         conn.close()
@@ -90,6 +108,8 @@ def create_task(origin_id: int, origin_title: str, dest_id: int) -> None:
         origin_title: The origin chat title.
         dest_id: The destination chat ID.
     """
+    log_operation_start(logger, "create_task", origin_chat_id=origin_id, origin_title=origin_title, dest_chat_id=dest_id)
+    
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -100,13 +120,15 @@ def create_task(origin_id: int, origin_title: str, dest_id: int) -> None:
         """, (origin_id, origin_title, dest_id))
         
         conn.commit()
-        logging.info("Task created: origin_id=%d, dest_id=%d", origin_id, dest_id)
+        log_database_operation(logger, "create_task_success", origin_chat_id=origin_id, dest_chat_id=dest_id)
+        log_operation_success(logger, "create_task", origin_chat_id=origin_id, dest_chat_id=dest_id)
         
     except sqlite3.IntegrityError:
-        logging.warning("Task already exists for origin_id=%d", origin_id)
+        log_operation_error(logger, "create_task", sqlite3.IntegrityError("Task already exists"), origin_chat_id=origin_id)
+        logger.warning(f"⚠️ Task already exists for origin_chat_id={origin_id}")
         raise
     except sqlite3.Error as e:
-        logging.error("Error creating task: %s", e)
+        log_operation_error(logger, "create_task", e, origin_chat_id=origin_id, dest_chat_id=dest_id)
         raise
     finally:
         conn.close()
@@ -120,6 +142,8 @@ def update_strategy(origin_id: int, strategy: str) -> None:
         origin_id: The origin chat ID.
         strategy: The cloning strategy ('forward' or 'download_upload').
     """
+    log_operation_start(logger, "update_strategy", origin_chat_id=origin_id, strategy=strategy)
+    
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -131,14 +155,16 @@ def update_strategy(origin_id: int, strategy: str) -> None:
         """, (strategy, origin_id))
         
         if cursor.rowcount == 0:
-            logging.warning("No task found for origin_id=%d", origin_id)
+            log_operation_error(logger, "update_strategy", ValueError("No task found"), origin_chat_id=origin_id)
+            logger.warning(f"⚠️ No task found for origin_chat_id={origin_id}")
             return
             
         conn.commit()
-        logging.info("Strategy updated: origin_id=%d, strategy=%s", origin_id, strategy)
+        log_database_operation(logger, "update_strategy_success", origin_chat_id=origin_id, strategy=strategy)
+        log_operation_success(logger, "update_strategy", origin_chat_id=origin_id, strategy=strategy)
         
     except sqlite3.Error as e:
-        logging.error("Error updating strategy: %s", e)
+        log_operation_error(logger, "update_strategy", e, origin_chat_id=origin_id, strategy=strategy)
         raise
     finally:
         conn.close()
@@ -152,6 +178,8 @@ def update_progress(origin_id: int, last_message_id: int) -> None:
         origin_id: The origin chat ID.
         last_message_id: The ID of the last synced message.
     """
+    log_database_operation(logger, "update_progress", origin_chat_id=origin_id, last_message_id=last_message_id)
+    
     conn = create_connection()
     cursor = conn.cursor()
     
@@ -163,14 +191,15 @@ def update_progress(origin_id: int, last_message_id: int) -> None:
         """, (last_message_id, origin_id))
         
         if cursor.rowcount == 0:
-            logging.warning("No task found for origin_id=%d", origin_id)
+            log_operation_error(logger, "update_progress", ValueError("No task found"), origin_chat_id=origin_id)
+            logger.warning(f"⚠️ No task found for origin_chat_id={origin_id}")
             return
             
         conn.commit()
-        logging.info("Progress updated: origin_id=%d, last_message_id=%d", origin_id, last_message_id)
+        log_database_operation(logger, "update_progress_success", origin_chat_id=origin_id, last_message_id=last_message_id)
         
     except sqlite3.Error as e:
-        logging.error("Error updating progress: %s", e)
+        log_operation_error(logger, "update_progress", e, origin_chat_id=origin_id, last_message_id=last_message_id)
         raise
     finally:
         conn.close() 
