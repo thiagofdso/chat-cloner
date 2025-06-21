@@ -6,6 +6,7 @@ import typer
 from typing import Optional
 from pathlib import Path
 from pyrogram import Client
+import toml
 
 from config import load_config, Config
 from database import init_db, get_task, create_task, update_strategy, update_progress
@@ -221,7 +222,12 @@ def sync(
 @app.command()
 def version():
     """Exibe a versão do Clonechat."""
-    typer.echo("Clonechat v2.0.0")
+    try:
+        pyproject = toml.load("pyproject.toml")
+        version = pyproject.get("project", {}).get("version", "desconhecida")
+        typer.echo(f"Clonechat v{version}")
+    except Exception:
+        typer.echo("Clonechat (versão desconhecida)")
 
 
 if __name__ == "__main__":

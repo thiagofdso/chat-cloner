@@ -1,6 +1,7 @@
 # Environment variables
 .env
 config.ini
+!.env.example
 
 # Database
 data/clonechat.db
