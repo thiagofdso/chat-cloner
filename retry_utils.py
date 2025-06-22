@@ -9,7 +9,7 @@ import asyncio
 import functools
 import time
 from typing import Any, Callable, Optional, Type, Union, List
-from pyrogram.errors import FloodWait, ChatForwardsRestricted, NetworkError, BadRequest
+from pyrogram.errors import FloodWait, ChatForwardsRestricted, BadRequest
 from logging_config import get_logger, log_retry_attempt, log_flood_wait
 
 
@@ -43,7 +43,6 @@ class RetryConfig:
         self.jitter = jitter
         self.retryable_exceptions = retryable_exceptions or [
             FloodWait,
-            NetworkError,
             BadRequest
         ]
 
@@ -250,7 +249,6 @@ def retry_telegram_operation(
         jitter=True,
         retryable_exceptions=[
             FloodWait,
-            NetworkError,
             BadRequest
         ]
     )

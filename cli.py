@@ -160,8 +160,10 @@ async def run_sync_async(
 
 @app.command()
 def sync(
-    origin: Optional[int] = typer.Argument(
+    origin: Optional[int] = typer.Option(
         None,
+        "--origin",
+        "-o",
         help="ID do chat de origem (não usado com --batch)"
     ),
     batch: bool = typer.Option(
@@ -191,7 +193,7 @@ def sync(
     uma nova clonagem do zero.
     
     Modos de uso:
-    - Individual: python main.py sync 123456789
+    - Individual: python main.py sync --origin 123456789
     - Batch: python main.py sync --batch --source chats.txt
     """
     try:
