@@ -88,7 +88,8 @@ async def run_sync_async(
     origin: Optional[int],
     batch: bool,
     source: Optional[str],
-    restart: bool
+    restart: bool,
+    force_download: bool = False
 ) -> None:
     """
     Async wrapper for the sync operation.
@@ -98,6 +99,7 @@ async def run_sync_async(
         batch: Whether to process in batch mode.
         source: Source file for batch processing.
         restart: Whether to restart the sync.
+        force_download: Whether to force download strategy for extracting audio from videos.
     """
     try:
         log_operation_start(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
@@ -113,12 +115,17 @@ async def run_sync_async(
             api_hash=config.telegram_api_hash
         )
         
+        # Iniciar cliente Pyrogram
+        await client.start()
+        me = await client.get_me()
+        logger.info(f"🤖 Logged in as: {me.first_name} (ID: {me.id})")
+        
         # Inicializar banco de dados
         init_db()
         logger.info("💾 Banco de dados inicializado")
         
         # Inicializar motor de clonagem
-        engine = ClonerEngine(config, client)
+        engine = ClonerEngine(config, client, force_download=force_download)
         logger.info("🚀 Motor de clonagem inicializado")
         
         if batch:
@@ -156,6 +163,10 @@ async def run_sync_async(
     except Exception as e:
         log_operation_error(logger, "run_sync_async", e, origin=origin, batch=batch, restart=restart)
         raise typer.Exit(1)
+    finally:
+        # Fechar cliente Pyrogram
+        if 'client' in locals():
+            await client.stop()
 
 
 @app.command()
@@ -183,6 +194,12 @@ def sync(
         "--restart",
         "-r",
         help="Forçar nova clonagem do zero (apaga dados anteriores)"
+    ),
+    force_download: bool = typer.Option(
+        False,
+        "--force-download",
+        "-f",
+        help="Forçar estratégia download_upload para extrair áudio de vídeos"
     )
 ):
     """
@@ -192,9 +209,17 @@ def sync(
     para este chat e resume de onde parou. Use --restart para forçar
     uma nova clonagem do zero.
     
+    Estratégias de clonagem:
+    - Forward: Encaminhamento direto (mais rápido, sem extração de áudio)
+    - Download-Upload: Download, processamento e upload (extrai áudio de vídeos)
+    
+    Use --force-download para sempre usar a estratégia download_upload,
+    garantindo que o áudio seja extraído de todos os vídeos.
+    
     Modos de uso:
     - Individual: python main.py sync --origin 123456789
     - Batch: python main.py sync --batch --source chats.txt
+    - Com extração de áudio: python main.py sync --origin 123456789 --force-download
     """
     try:
         log_operation_start(logger, "sync_command", origin=origin, batch=batch, restart=restart)
@@ -212,7 +237,7 @@ def sync(
                 raise typer.BadParameter("--source só deve ser usado com --batch")
         
         # Executar operação assíncrona
-        asyncio.run(run_sync_async(origin, batch, source, restart))
+        asyncio.run(run_sync_async(origin, batch, source, restart, force_download))
         
         log_operation_success(logger, "sync_command", origin=origin, batch=batch, restart=restart)
         

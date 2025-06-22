@@ -61,11 +61,15 @@ def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
         dest_chat_id: The destination channel ID.
     """
     try:
+        logger.info(f"📝 Starting to save channel link for: {origin_title} (ID: {dest_chat_id})")
+        
         # Generate the channel link
         channel_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
+        logger.info(f"🔗 Generated channel link: {channel_link}")
         
         # Create the links file if it doesn't exist
         links_file = Path("links_canais.txt")
+        logger.info(f"📄 Writing to file: {links_file.absolute()}")
         
         # Write the channel info
         with open(links_file, 'a', encoding='utf-8') as f:
@@ -73,10 +77,12 @@ def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
             f.write(f"{channel_link}\n")
             f.write("-" * 50 + "\n")  # Separator
         
-        logger.info(f"📝 Channel link saved: {origin_title} -> {channel_link}")
+        logger.info(f"✅ Channel link saved successfully: {origin_title} -> {channel_link}")
         
     except Exception as e:
         logger.error(f"❌ Failed to save channel link: {e}")
+        logger.error(f"❌ Error details: origin_title='{origin_title}', dest_chat_id={dest_chat_id}")
+        raise
 
 
 async def leave_origin_channel(client: Client, origin_chat_id: int, origin_title: str) -> None:
@@ -107,16 +113,18 @@ class ClonerEngine:
     Main cloning engine that handles automatic strategy detection and chat synchronization.
     """
     
-    def __init__(self, config: Config, client: Client):
+    def __init__(self, config: Config, client: Client, force_download: bool = False):
         """
         Initialize the ClonerEngine.
         
         Args:
             config: Configuration object with Telegram credentials and settings.
             client: Pyrogram client instance.
+            force_download: If True, force download_upload strategy for audio extraction.
         """
         self.config = config
         self.client = client
+        self.force_download = force_download
         self.logger = get_logger(__name__)
         
         # Log configuration
@@ -135,6 +143,9 @@ class ClonerEngine:
         self.download_path = Path(config.cloner_download_path)
         self.download_path.mkdir(parents=True, exist_ok=True)
         logger.info(f"📁 Download directory ready: {self.download_path}")
+        
+        if force_download:
+            logger.info("🔧 Force download mode enabled - will use download_upload strategy for audio extraction")
         
     async def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
         """
@@ -164,6 +175,7 @@ class ClonerEngine:
         
         # Get origin chat information
         try:
+            logger.info(f"Obtendo dados do canal de origem(ID: {origin_chat_id})")
             origin_chat = await self.client.get_chat(origin_chat_id)
             origin_title = origin_chat.title
             logger.info(f"📢 Origin chat: {origin_title} (ID: {origin_chat_id})")
@@ -204,10 +216,17 @@ class ClonerEngine:
         """
         log_operation_start(logger, "determine_strategy", origin_chat_id=origin_chat_id)
         
+        # If force_download is enabled, always use download_upload strategy
+        if self.force_download:
+            logger.info("🔧 Force download mode: using download_upload strategy")
+            log_strategy_detection(logger, "download_upload", origin_chat_id)
+            return "download_upload"
+        
         try:
             # Try to get a recent message to test forwarding
-            messages = self.client.get_chat_history(origin_chat_id, limit=1)
-            test_message = next(messages, None)
+            test_message = None
+            async for message in self.client.get_chat_history(origin_chat_id, limit=1):
+                test_message = message
             
             if not test_message:
                 logger.warning("⚠️ No messages found to test strategy, defaulting to download_upload")
@@ -252,7 +271,7 @@ class ClonerEngine:
         """
         log_operation_start(logger, "create_destination_channel", origin_title=origin_title)
         
-        dest_title = f"[CLONE] {origin_title}"
+        dest_title = origin_title
         
         try:
             # Create the channel
@@ -290,15 +309,23 @@ class ClonerEngine:
         strategy = task['cloning_strategy']
         last_synced_id = task['last_synced_message_id']
         
+        # Criar pasta de download específica para esta tarefa
+        safe_title = "".join(c for c in origin_title if c.isalnum() or c in (' ', '_')).rstrip()
+        download_path = self.download_path / f"{origin_chat_id} - {safe_title}"
+        download_path.mkdir(parents=True, exist_ok=True)
+
         logger.info(f"🚀 Starting sync: origin={origin_chat_id}, dest={dest_chat_id}, strategy={strategy}")
         
         try:
             # Get the last message ID to determine sync range
-            messages = self.client.get_chat_history(origin_chat_id, limit=1)
-            last_message = next(messages, None)
+            last_message = None
+            async for message in self.client.get_chat_history(origin_chat_id, limit=1):
+                last_message = message
             
             if not last_message:
                 logger.warning("⚠️ No messages found in origin chat")
+                # Still perform post-cloning actions even if no messages
+                await self._post_cloning_actions(origin_chat_id, origin_title, dest_chat_id)
                 return
             
             last_message_id = last_message.id
@@ -308,6 +335,8 @@ class ClonerEngine:
             total_messages = last_message_id - last_synced_id
             if total_messages <= 0:
                 logger.info("✅ No new messages to sync")
+                # Still perform post-cloning actions even if no new messages
+                await self._post_cloning_actions(origin_chat_id, origin_title, dest_chat_id)
                 return
             
             # Main sync loop
@@ -315,7 +344,7 @@ class ClonerEngine:
             for message_id in range(last_synced_id + 1, last_message_id + 1):
                 try:
                     # Get the message
-                    message = self.client.get_messages(origin_chat_id, message_id)
+                    message = await self.client.get_messages(origin_chat_id, message_id)
                     
                     if not message or message.empty:
                         logger.debug(f"⏭️ Skipping empty message {message_id}")
@@ -325,9 +354,9 @@ class ClonerEngine:
                     if strategy == "forward":
                         await self._forward_message(message, dest_chat_id)
                     else:  # download_upload
-                        await self._download_upload_message(message, dest_chat_id)
+                        await self._download_upload_message(message, dest_chat_id, download_path)
                     
-                    # Update progress
+                    # Update progress only if processing was successful
                     update_progress(origin_chat_id, message_id)
                     processed_count += 1
                     
@@ -341,10 +370,13 @@ class ClonerEngine:
                 except FloodWait as e:
                     logger.warning(f"⏳ FloodWait: waiting {e.value} seconds")
                     await asyncio.sleep(e.value)
+                    # Don't increment processed_count for FloodWait, retry the same message
                     continue
                     
                 except Exception as e:
                     log_operation_error(logger, "sync_chat_message", e, message_id=message_id, origin_chat_id=origin_chat_id)
+                    logger.error(f"❌ Failed to process message {message_id}, skipping to next message")
+                    # Don't increment processed_count for failed messages
                     continue
             
             log_operation_success(logger, "sync_chat", origin_chat_id=origin_chat_id, processed_messages=processed_count, total_messages=total_messages)
@@ -401,20 +433,21 @@ class ClonerEngine:
             log_operation_error(logger, "_forward_message", e, message_id=message.id, dest_chat_id=dest_chat_id)
             raise
     
-    async def _download_upload_message(self, message, dest_chat_id: int) -> None:
+    async def _download_upload_message(self, message, dest_chat_id: int, download_path: Path) -> None:
         """
         Download and upload a message using the download_upload strategy from processor.
         
         Args:
             message: The message to process.
             dest_chat_id: Destination chat ID.
+            download_path: The specific directory to download files to for this task.
         """
         try:
             await download_process_upload(
                 client=self.client,
                 message=message,
                 destination_chat=dest_chat_id,
-                download_path=self.download_path,
+                download_path=download_path,
                 delay_seconds=self.config.cloner_delay_seconds
             )
         except Exception as e:

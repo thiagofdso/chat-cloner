@@ -6,8 +6,10 @@ Ferramenta avançada para clonar chats do Telegram com arquitetura moderna e rec
 
 - **Clonagem Automática**: Criação automática de canais de destino
 - **Detecção Inteligente**: Estratégia automática (forward ou download-upload)
-- **Processamento de Mídia**: Suporte completo a todos os tipos de mensagem
 - **Extração de Áudio**: Extração automática de áudio de vídeos via FFmpeg
+- **Força Download**: Opção para forçar estratégia download-upload e extrair áudio
+- **Salvamento de Links**: Arquivo `links_canais.txt` com links dos canais clonados
+- **Processamento de Mídia**: Suporte completo a todos os tipos de mensagem
 - **Logging Avançado**: Sistema de logs estruturado com saída para console e arquivo
 - **Retry Inteligente**: Mecanismo de retry com backoff exponencial
 - **Processamento em Lote**: Suporte a múltiplos chats via arquivo
@@ -46,14 +48,29 @@ copy .env.example .env
 
 ## 📖 Uso
 
-### Clonagem Individual
+### Clonagem Individual (Estratégia Automática)
 ```bash
 python main.py sync --origin <ID_DO_CANAL>
 ```
+- Detecta automaticamente se pode usar `forward` ou `download_upload`
+- **Não extrai áudio** se usar estratégia `forward`
+
+### Clonagem com Extração de Áudio Forçada
+```bash
+python main.py sync --origin <ID_DO_CANAL> --force-download
+```
+- **Sempre usa** estratégia `download_upload`
+- **Sempre extrai áudio** de vídeos
+- Arquivos MP3 são salvos na pasta do canal
 
 ### Clonagem em Lote
 ```bash
 python main.py sync --batch --source arquivo_com_ids.txt
+```
+
+### Clonagem em Lote com Extração de Áudio
+```bash
+python main.py sync --batch --source arquivo_com_ids.txt --force-download
 ```
 
 ### Modo Restart (Força Nova Clonagem)
@@ -72,8 +89,13 @@ python main.py version
 chatclone/
 ├── data/
 │   ├── clonechat.db         # Banco de dados SQLite
-│   ├── downloads/           # Arquivos temporários
+│   ├── downloads/           # Arquivos temporários e áudio extraído
+│   │   └── -100123456789 - Nome do Canal/
+│   │       ├── 2-video.mp4          # Vídeo original (apagado após upload)
+│   │       ├── 2-video.mp3          # Áudio extraído (PRESERVADO)
+│   │       └── ...
 │   └── app.log             # Logs da aplicação
+├── links_canais.txt        # Links dos canais clonados
 ├── config.py               # Gerenciamento de configuração
 ├── database.py             # Camada de acesso a dados
 ├── engine.py               # Motor principal de clonagem
@@ -106,8 +128,8 @@ Crie um arquivo de texto com IDs de chat, um por linha:
 ## 📊 Funcionalidades
 
 ### Estratégias de Clonagem
-- **Forward**: Encaminhamento direto (mais rápido)
-- **Download-Upload**: Download, processamento e upload (para chats restritos)
+- **Forward**: Encaminhamento direto (mais rápido, sem extração de áudio)
+- **Download-Upload**: Download, processamento e upload (extrai áudio de vídeos)
 
 ### Tipos de Mídia Suportados
 - Texto, Fotos, Vídeos, Documentos
@@ -116,9 +138,20 @@ Crie um arquivo de texto com IDs de chat, um por linha:
 
 ### Recursos Avançados
 - **Extração de Áudio**: Vídeos são processados para extrair áudio em MP3
+- **Força Download**: Opção `--force-download` para sempre extrair áudio
+- **Salvamento de Links**: Links dos canais clonados salvos em `links_canais.txt`
 - **Logging Estruturado**: Logs detalhados com formatação colorida
 - **Retry Inteligente**: Tratamento automático de erros do Telegram
 - **Progresso Persistente**: Continua de onde parou em execuções subsequentes
+
+### Arquivo de Links dos Canais
+Após cada clonagem, o arquivo `links_canais.txt` é atualizado com:
+```
+Nome do Canal Original
+https://t.me/c/1234567890/1
+Nome do Canal Original 2
+https://t.me/c/9876543210/1
+```
 
 ## 🐛 Solução de Problemas
 
@@ -139,6 +172,10 @@ error: Microsoft Visual C++ 14.0 or greater is required
 TELEGRAM_API_ID is required
 ```
 **Solução**: Configure corretamente o arquivo `.env`.
+
+### Áudio não sendo extraído
+**Problema**: Usando estratégia `forward` que não extrai áudio.
+**Solução**: Use a opção `--force-download` para forçar extração de áudio.
 
 ## 📝 Logs
 
@@ -165,4 +202,6 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 - O Build Tools do Visual Studio é necessário para instalar a dependência nativa `tgcrypto`
 - O arquivo `.env` **não** deve ser versionado
 - Use o modo `--restart` com cuidado, pois apaga dados anteriores
-- O sistema cria automaticamente canais de destino com prefixo `[CLONE]` 
+- O sistema cria automaticamente canais de destino
+- Use `--force-download` para garantir extração de áudio de todos os vídeos
+- Os arquivos MP3 extraídos são preservados na pasta do canal 

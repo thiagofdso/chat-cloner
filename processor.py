@@ -515,90 +515,173 @@ async def upload_media(
         raise
 
 
+async def _get_message_caption(message: Message) -> str:
+    """Extracts the caption from a message, returning an empty string if none exists."""
+    return message.caption or ""
+
+
+async def _extract_audio(message: Message, file_path: Path) -> None:
+    """
+    Extracts audio from a video file if the message is a video.
+    The audio file is saved in the same directory with a .mp3 extension.
+    """
+    if not message.video:
+        logger.debug(f"⏭️ Skipping audio extraction for non-video message {message.id}")
+        return
+
+    try:
+        log_operation_start(logger, "extract_audio", message_id=message.id, video_file=file_path.name)
+        output_path = file_path.with_suffix(".mp3")
+        
+        logger.info(f"🎬 Starting audio extraction: {file_path.name} -> {output_path.name}")
+        
+        # Use -y to overwrite existing file, -vn to disable video
+        command = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(file_path),
+            "-vn",
+            "-acodec",
+            "libmp3lame",
+            "-q:a",
+            "2",
+            str(output_path),
+        ]
+        
+        logger.debug(f"🔧 FFmpeg command: {' '.join(command)}")
+        
+        result = subprocess.run(
+            command, check=True, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        
+        if output_path.exists():
+            file_size = output_path.stat().st_size
+            logger.info(f"✅ Audio extracted successfully for message {message.id}: {output_path.name} ({file_size} bytes)")
+            log_operation_success(logger, "extract_audio", message_id=message.id, audio_file=output_path.name, file_size=file_size)
+        else:
+            logger.error(f"❌ Audio file was not created: {output_path}")
+            raise FileNotFoundError(f"Audio file was not created: {output_path}")
+
+    except FileNotFoundError:
+        logger.error(
+            "❌ FFmpeg not found. Please install it and ensure it's in your system's PATH."
+        )
+        log_operation_error(logger, "extract_audio", FileNotFoundError("FFmpeg not found"), message_id=message.id)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"❌ FFmpeg error extracting audio for message {message.id}: {e.stderr}")
+        log_operation_error(logger, "extract_audio", e, message_id=message.id, stderr=e.stderr)
+    except Exception as e:
+        logger.error(f"❌ Unexpected error extracting audio for message {message.id}: {e}")
+        log_operation_error(logger, "extract_audio", e, message_id=message.id)
+
+
+async def _upload_media(
+    client: Client, chat_id: int, file_path: Path, caption: str
+) -> None:
+    """
+    Uploads a media file to the specified chat, selecting the correct
+    Pyrogram method based on the file type.
+    """
+    log_operation_start(
+        logger, "upload_media", file_path=str(file_path), chat_id=chat_id
+    )
+    
+    try:
+        if file_path.suffix.lower() in [".jpg", ".jpeg", ".png"]:
+            await client.send_photo(chat_id, photo=str(file_path), caption=caption)
+        elif file_path.suffix.lower() in [".mp4", ".mkv", ".avi", ".mov"]:
+            await client.send_video(chat_id, video=str(file_path), caption=caption)
+        elif file_path.suffix.lower() in [".mp3", ".ogg", ".wav", ".flac"]:
+            await client.send_audio(chat_id, audio=str(file_path), caption=caption)
+        else:
+            await client.send_document(chat_id, document=str(file_path), caption=caption)
+        
+        logger.info(f"✅ Uploaded {file_path.name} to {chat_id}")
+    
+    except Exception as e:
+        log_operation_error(logger, "upload_media", e, file_path=str(file_path))
+        raise # Re-raise to be handled by the main processor
+
+
 async def download_process_upload(
     client: Client,
     message: Message,
     destination_chat: int,
     download_path: Path,
-    delay_seconds: float = 2.0
+    delay_seconds: int,
 ) -> None:
-    """Process a message using the download-upload strategy.
-    
-    This function implements the cycle: Download -> Process -> Upload -> Delete
-    to minimize disk usage and ensure atomic processing of each message.
-    
+    """
+    Processes a message, handling both text and media types.
+    For media, downloads it, optionally extracts audio, and uploads the original media.
+    For text, sends the text content.
+
     Args:
         client: The Pyrogram client.
         message: The message to process.
         destination_chat: The destination chat ID.
-        download_path: Directory to save temporary files.
-        delay_seconds: Delay in seconds between operations to avoid FloodWait.
+        download_path: The base directory for downloads for this task.
+        delay_seconds: Delay after processing the message.
     """
-    downloaded_files = []
-    
+    log_operation_start(
+        logger,
+        "download_process_upload",
+        message_id=message.id,
+        destination_chat=destination_chat,
+    )
+
     try:
-        log_operation_start(logger, "download_process_upload", message_id=message.id, destination_chat=destination_chat)
+        if message.text:
+            # Handle text-only messages
+            await client.send_message(
+                chat_id=destination_chat, text=message.text
+            )
+            logger.info(f"✅ Sent text message {message.id} to {destination_chat}")
         
-        # Step 1: Download the media
-        downloaded_path = await download_media(client, message, download_path, message.id)
-        
-        if not downloaded_path:
-            logger.warning(f"Failed to download message {message.id}, skipping")
-            return
-        
-        downloaded_files.append(downloaded_path)
-        
-        # Step 2: Determine message type and caption
-        caption = get_caption(message)
-        message_type = "document"  # default
-        
-        if hasattr(message, 'video') and message.video:
-            message_type = "video"
-        elif hasattr(message, 'photo') and message.photo:
-            message_type = "photo"
-        elif hasattr(message, 'audio') and message.audio:
-            message_type = "audio"
-        elif hasattr(message, 'voice') and message.voice:
-            message_type = "voice"
-        
-        # Step 3: Upload the original media
-        await upload_media(client, downloaded_path, destination_chat, caption, message_type)
-        
-        # Step 4: Extract and upload audio for videos
-        if message_type == "video" and downloaded_path.suffix.lower() in ['.mp4', '.mov', '.avi']:
-            try:
-                audio_path, _ = extract_audio_from_video(str(downloaded_path))
-                audio_file_path = Path(audio_path)
+        elif message.media:
+            # Handle media messages
+            caption = await _get_message_caption(message)
+            downloaded_path = await download_media(client, message, download_path, message.id)
+
+            if downloaded_path:
+                # Extração de áudio é um efeito colateral, não afeta o upload
+                audio_path = None
+                if message.video:
+                    await _extract_audio(message, downloaded_path)
+                    # Get the audio file path that was created
+                    audio_path = downloaded_path.with_suffix(".mp3")
+
+                await _upload_media(
+                    client, destination_chat, downloaded_path, caption
+                )
                 
-                if audio_file_path.exists():
-                    downloaded_files.append(audio_file_path)
-                    
-                    # Upload the extracted audio
-                    await upload_media(
-                        client,
-                        audio_file_path,
-                        destination_chat,
-                        f"{caption or ''} (Audio extraído)" if caption else "Audio extraído",
-                        "audio"
-                    )
-                    
-                    logger.info(f"✅ Successfully uploaded extracted audio for message {message.id}")
-                    
-            except Exception as e:
-                logger.warning(f"Failed to extract/upload audio for message {message.id}: {e}")
-        
-        # Step 5: Apply delay to avoid FloodWait
-        if delay_seconds > 0:
-            await asyncio.sleep(delay_seconds)
-        
-        log_operation_success(logger, "download_process_upload", message_id=message.id, destination_chat=destination_chat)
-        
+                # Limpeza do arquivo baixado (apenas o arquivo original)
+                if downloaded_path.exists():
+                    os.remove(downloaded_path)
+                    logger.info(f"🗑️ Cleaned up downloaded file: {downloaded_path}")
+                
+                # Preservar o arquivo de áudio extraído
+                if audio_path and audio_path.exists():
+                    logger.info(f"🎵 Audio file preserved: {audio_path}")
+
+            else:
+                 # Se download_media retornar None mas a mensagem for de mídia,
+                 # pode ser um tipo não suportado ou um texto com formatação.
+                 # Tentamos enviar o texto/caption, se houver.
+                if caption:
+                    await client.send_message(chat_id=destination_chat, text=caption)
+                    logger.info(f"✅ Sent caption for message {message.id} to {destination_chat}")
+
     except Exception as e:
-        log_operation_error(logger, "download_process_upload", e, message_id=message.id, destination_chat=destination_chat)
+        log_operation_error(
+            logger,
+            "download_process_upload",
+            e,
+            message_id=message.id,
+            destination_chat=destination_chat,
+        )
+        logger.error(f"❌ Failed to process message {message.id}: {e}")
+        # Re-raise the exception to be handled by the caller
         raise
-        
     finally:
-        # Step 6: Clean up downloaded files
-        for file_path in downloaded_files:
-            if file_path and file_path.exists():
-                delete_local_media(file_path) 
+        await asyncio.sleep(delay_seconds) 
