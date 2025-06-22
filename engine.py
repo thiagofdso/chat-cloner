@@ -6,7 +6,7 @@ import logging
 import time
 from pathlib import Path
 from typing import Dict, Any, Optional
-from pyrogram import Client
+from pyrogram import Client, enums
 from pyrogram.errors import ChatForwardsRestricted, FloodWait, ChannelInvalid, PeerIdInvalid
 
 from config import Config
@@ -50,6 +50,49 @@ def delete_task(origin_id: int) -> None:
         raise
     finally:
         conn.close()
+
+
+async def publish_channel_link(client: Client, origin_title: str, dest_chat_id: int, publish_chat_id: int, topic_id: Optional[int] = None) -> None:
+    """
+    Publish the cloned channel link to a group or channel.
+    
+    Args:
+        client: The Pyrogram client.
+        origin_title: The title of the origin channel.
+        dest_chat_id: The destination channel ID.
+        publish_chat_id: The chat ID where to publish the link.
+        topic_id: The topic ID (for groups with topics).
+    """
+    try:
+        logger.info(f"📢 Publishing channel link for: {origin_title} (ID: {dest_chat_id})")
+        
+        # Generate the channel link
+        channel_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
+        logger.info(f"🔗 Generated channel link: {channel_link}")
+        
+        # Create the message text
+        message_text = f"{origin_title}\n{channel_link}"
+        
+        # Prepare message parameters
+        message_params = {
+            "chat_id": publish_chat_id,
+            "text": message_text
+        }
+        
+        # Add topic_id if provided
+        if topic_id:
+            message_params["reply_to_message_id"] = topic_id
+            logger.info(f"📝 Publishing to topic ID: {topic_id}")
+        
+        # Send the message
+        await client.send_message(**message_params)
+        
+        logger.info(f"✅ Channel link published successfully: {origin_title} -> {channel_link}")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to publish channel link: {e}")
+        logger.error(f"❌ Error details: origin_title='{origin_title}', dest_chat_id={dest_chat_id}, publish_chat_id={publish_chat_id}")
+        raise
 
 
 def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
@@ -113,7 +156,7 @@ class ClonerEngine:
     Main cloning engine that handles automatic strategy detection and chat synchronization.
     """
     
-    def __init__(self, config: Config, client: Client, force_download: bool = False, leave_origin: bool = False, dest_chat_id: Optional[int] = None):
+    def __init__(self, config: Config, client: Client, force_download: bool = False, leave_origin: bool = False, dest_chat_id: Optional[int] = None, publish_chat_id: Optional[int] = None, topic_id: Optional[int] = None):
         """
         Initialize the ClonerEngine.
         
@@ -123,12 +166,16 @@ class ClonerEngine:
             force_download: If True, force download_upload strategy for audio extraction.
             leave_origin: If True, leave the origin channel after cloning.
             dest_chat_id: Destination channel ID (if None, creates a new channel).
+            publish_chat_id: Chat ID where to publish cloned channel links.
+            topic_id: Topic ID for publishing in groups with topics.
         """
         self.config = config
         self.client = client
         self.force_download = force_download
         self.leave_origin = leave_origin
         self.dest_chat_id = dest_chat_id
+        self.publish_chat_id = publish_chat_id
+        self.topic_id = topic_id
         self.logger = get_logger(__name__)
         
         # Log configuration
@@ -158,6 +205,13 @@ class ClonerEngine:
             logger.info(f"🎯 Using existing destination channel: {dest_chat_id}")
         else:
             logger.info("🆕 Will create new destination channel")
+        
+        if publish_chat_id:
+            logger.info(f"📢 Will publish links to chat: {publish_chat_id}")
+            if topic_id:
+                logger.info(f"📝 Will publish to topic: {topic_id}")
+        else:
+            logger.info("📄 Links will be saved to file only")
         
     async def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
         """
@@ -375,6 +429,14 @@ class ClonerEngine:
                     if not message or message.empty:
                         logger.debug(f"⏭️ Skipping empty message {message_id}")
                         continue
+                        
+                    # Skip service messages that have no content to process
+                    if not message.text and not message.caption and not message.media:
+                        logger.debug(f"⏭️ Skipping service message {message_id}")
+                        # Service messages are considered "processed"
+                        update_progress(origin_chat_id, message_id)
+                        processed_count += 1
+                        continue
                     
                     # Process message based on strategy using processor functions
                     if strategy == "forward":
@@ -417,7 +479,7 @@ class ClonerEngine:
     
     async def _post_cloning_actions(self, origin_chat_id: int, origin_title: str, dest_chat_id: int) -> None:
         """
-        Perform post-cloning actions: save channel link and optionally leave origin channel.
+        Perform post-cloning actions: save channel link, publish link, and optionally leave origin channel.
         
         Args:
             origin_chat_id: The origin chat ID.
@@ -429,6 +491,10 @@ class ClonerEngine:
             
             # Save channel link to file
             save_channel_link(origin_title, dest_chat_id)
+            
+            # Publish channel link if publish_chat_id is specified
+            if self.publish_chat_id:
+                await publish_channel_link(self.client, origin_title, dest_chat_id, self.publish_chat_id, self.topic_id)
             
             # Leave the origin channel only if leave_origin is enabled
             if self.leave_origin:

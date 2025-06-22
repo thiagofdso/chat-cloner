@@ -5,9 +5,10 @@ import asyncio
 import typer
 from typing import Optional
 from pathlib import Path
-from pyrogram import Client
+from pyrogram import Client, raw
 import toml
 import sqlite3
+from pyrogram.raw.functions.channels import GetFullChannel, GetForumTopics
 
 from config import load_config, Config
 
@@ -116,7 +117,9 @@ async def run_sync_async(
     restart: bool,
     force_download: bool = False,
     leave_origin: bool = False,
-    dest: Optional[str] = None
+    dest: Optional[str] = None,
+    publish_to: Optional[str] = None,
+    topic_id: Optional[int] = None
 ) -> None:
     """
     Async wrapper for the sync operation.
@@ -129,6 +132,8 @@ async def run_sync_async(
         force_download: Whether to force download strategy for extracting audio from videos.
         leave_origin: Whether to leave the origin channel after cloning.
         dest: Destination channel ID, username or link (if None, creates a new channel).
+        publish_to: ID, username or link of the group/channel to publish the links of cloned channels.
+        topic_id: ID of the topic (for groups with topic enabled).
     """
     try:
         log_operation_start(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
@@ -159,7 +164,11 @@ async def run_sync_async(
         if dest:
             dest_chat_id = await resolve_chat_id(client, dest)
         
-        engine = ClonerEngine(config, client, force_download=force_download, leave_origin=leave_origin, dest_chat_id=dest_chat_id)
+        publish_chat_id = None
+        if publish_to:
+            publish_chat_id = await resolve_chat_id(client, publish_to)
+        
+        engine = ClonerEngine(config, client, force_download=force_download, leave_origin=leave_origin, dest_chat_id=dest_chat_id, publish_chat_id=publish_chat_id, topic_id=topic_id)
         logger.info("🚀 Motor de clonagem inicializado")
         
         if batch:
@@ -248,6 +257,18 @@ def sync(
         "--dest",
         "-d",
         help="ID, username ou link do canal de destino (se não especificado, cria um novo canal)"
+    ),
+    publish_to: Optional[str] = typer.Option(
+        None,
+        "--publish-to",
+        "-p",
+        help="ID, username ou link do grupo/canal onde publicar os links dos canais clonados"
+    ),
+    topic_id: Optional[int] = typer.Option(
+        None,
+        "--topic",
+        "-t",
+        help="ID do tópico (para grupos com tópicos habilitados)"
     )
 ):
     """
@@ -266,12 +287,16 @@ def sync(
     
     Use --dest para especificar um canal de destino existente em vez de criar um novo.
     Use --leave-origin para sair do canal de origem após a clonagem.
+    Use --publish-to para publicar os links dos canais clonados em um grupo/canal.
+    Use --topic para especificar um tópico específico (para grupos com tópicos).
     
     Modos de uso:
     - Individual: python main.py sync --origin 123456789
     - Com extração de áudio: python main.py sync --origin 123456789 --force-download
     - Para canal existente: python main.py sync --origin 123456789 --dest 987654321
     - Sair do canal origem: python main.py sync --origin 123456789 --leave-origin
+    - Publicar links: python main.py sync --origin 123456789 --publish-to -1001234567890
+    - Publicar em tópico: python main.py sync --origin 123456789 --publish-to -1001234567890 --topic 123
     - Batch: python main.py sync --batch --source chats.txt
     """
     try:
@@ -290,7 +315,7 @@ def sync(
                 raise typer.BadParameter("--source só deve ser usado com --batch")
         
         # Executar operação assíncrona
-        asyncio.run(run_sync_async(origin, batch, source, restart, force_download, leave_origin, dest))
+        asyncio.run(run_sync_async(origin, batch, source, restart, force_download, leave_origin, dest, publish_to, topic_id))
         
         log_operation_success(logger, "sync_command", origin=origin, batch=batch, restart=restart)
         
@@ -621,5 +646,102 @@ def version():
         typer.echo("Clonechat (versão desconhecida)")
 
 
-if __name__ == "__main__":
+@app.command()
+def list_topics(
+    chat_id: str = typer.Option(..., "--id", "-i", help="ID, username ou link do grupo para listar os tópicos")
+):
+    """
+    Lista todos os tópicos de um grupo com tópicos habilitados.
+    
+    Mostra o ID e nome de cada tópico, útil para usar com a opção --topic
+    do comando sync.
+    """
+    try:
+        log_operation_start(logger, "list_topics_command", chat_id=chat_id)
+        
+        async def list_group_topics():
+            # Carregar configurações
+            config = load_config()
+            logger.info("⚙️ Configurações carregadas com sucesso")
+            
+            # Inicializar cliente Pyrogram
+            client = Client(
+                "clonechat_user",
+                api_id=config.telegram_api_id,
+                api_hash=config.telegram_api_hash
+            )
+            
+            # Iniciar cliente Pyrogram
+            await client.start()
+            me = await client.get_me()
+            logger.info(f"🤖 Logged in as: {me.first_name} (ID: {me.id})")
+            
+            # Resolver ID do chat
+            resolved_chat_id = await resolve_chat_id(client, chat_id)
+            logger.info(f"🎯 Chat resolvido: {chat_id} -> {resolved_chat_id}")
+            
+            try:
+                # Obter peer do canal para a chamada da API Raw
+                peer = await client.resolve_peer(resolved_chat_id)
+                logger.info("ℹ️ Obtendo tópicos com chamada direta à API (channels.GetForumTopics)...")
+                
+                # Chamar diretamente a função da API MTProto
+                result = await client.invoke(
+                    GetForumTopics(
+                        channel=peer,
+                        offset_date=0,
+                        offset_id=0,
+                        offset_topic=0,
+                        limit=100  # Limite máximo por chamada
+                    )
+                )
+                
+                # A resposta contém uma lista de tópicos
+                topics = result.topics
+                
+                if not topics:
+                    logger.info("📭 Nenhum tópico encontrado neste grupo.")
+                    logger.info("💡 Verifique se o grupo realmente possui tópicos criados.")
+                    return
+                
+                # Exibir tópicos em formato de tabela
+                logger.info(f"📊 Encontrados {len(topics)} tópicos:")
+                logger.info("─" * 80)
+                logger.info(f"{'ID':<8} {'Nome do Tópico'}")
+                logger.info("─" * 80)
+                
+                for topic in topics:
+                    logger.info(f"{topic.id:<8} {topic.title}")
+                
+                logger.info("─" * 80)
+                logger.info("💡 Use o ID do tópico com a opção --topic no comando sync.")
+                
+            except Exception as e:
+                logger.error(f"❌ Erro ao obter tópicos: {e}")
+                if "CHANNEL_FORUM_MISSING" in str(e):
+                    logger.error("💡 O Telegram confirmou que este grupo não é um fórum.")
+                elif "CHAT_NOT_FOUND" in str(e):
+                    logger.error("💡 Verifique se o ID do grupo está correto.")
+                elif "CHAT_WRITE_FORBIDDEN" in str(e):
+                    logger.error("💡 Você precisa ter permissão de leitura no grupo.")
+                else:
+                    logger.error("💡 Verifique se o grupo existe e você tem acesso.")
+            
+            finally:
+                await client.stop()
+        
+        # Executar operação assíncrona
+        asyncio.run(list_group_topics())
+        
+        log_operation_success(logger, "list_topics_command", chat_id=chat_id)
+        
+    except Exception as e:
+        log_operation_error(logger, "list_topics_command", e, chat_id=chat_id)
+        raise typer.Exit(1)
+
+
+def main():
+    """
+    Entry point para o comando chat-clone.
+    """
     app() 

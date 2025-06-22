@@ -82,13 +82,29 @@ python main.py sync --origin <ID_DO_CANAL> --leave-origin
 - Sai automaticamente do canal de origem após a clonagem
 - Por padrão, permanece no canal de origem
 
+### Clonagem e Publicar Links
+```bash
+python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO/CANAL>
+```
+- Publica automaticamente os links dos canais clonados em um grupo/canal
+- Útil para manter uma lista atualizada dos canais clonados
+- O link é publicado após cada clonagem bem-sucedida
+
+### Clonagem e Publicar em Tópico Específico
+```bash
+python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO> --topic <ID_TOPICO>
+```
+- Publica os links em um tópico específico de um grupo
+- Requer que o grupo tenha tópicos habilitados
+- Útil para organizar links por categoria
+
 ### Combinações de Opções
 ```bash
-# Clonagem completa: extrair áudio, usar canal existente e sair do origem
-python main.py sync --origin <ID_DO_CANAL> --force-download --dest <ID_DESTINO> --leave-origin
+# Clonagem completa: extrair áudio, usar canal existente, sair do origem e publicar links
+python main.py sync --origin <ID_DO_CANAL> --force-download --dest <ID_DESTINO> --leave-origin --publish-to <ID_GRUPO>
 
-# Clonagem simples para canal existente
-python main.py sync --origin <ID_DO_CANAL> --dest <ID_DESTINO>
+# Clonagem simples para canal existente e publicar links
+python main.py sync --origin <ID_DO_CANAL> --dest <ID_DESTINO> --publish-to <ID_GRUPO>
 ```
 
 ### Clonagem em Lote
@@ -167,6 +183,29 @@ python main.py download --origin <ID_DO_CANAL> --restart
 - Apaga dados anteriores de progresso
 - Útil quando quer recomeçar completamente
 
+### Comandos de Diagnóstico
+
+#### `list-chats`
+Lista todos os chats acessíveis pela sua conta:
+```bash
+python main.py list-chats
+```
+
+#### `list-topics`
+Lista todos os tópicos de um grupo com tópicos habilitados:
+```bash
+python main.py list-topics --id <ID_GRUPO>
+```
+- Mostra o ID e o nome de cada tópico
+- Útil para descobrir o ID correto para usar com `--topic`
+- Só funciona em grupos com tópicos habilitados
+
+#### `test-resolve`
+Testa a resolução de um identificador de chat:
+```bash
+python main.py test-resolve --id <ID_USERNAME_LINK>
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -243,6 +282,29 @@ https://t.me/c/1234567890/1
 Nome do Canal Original 2
 https://t.me/c/9876543210/1
 ```
+
+### Publicação Automática de Links
+O Clonechat pode publicar automaticamente os links dos canais clonados em grupos ou canais:
+
+#### Formato da Mensagem Publicada
+A mensagem publicada terá um formato simples e direto:
+```
+Nome do Canal Original
+https://t.me/c/1234567890/1
+```
+
+#### Benefícios da Publicação Automática
+- **Organização**: Mantém uma lista atualizada dos canais clonados
+- **Colaboração**: Compartilha links com equipe/membros
+- **Rastreamento**: Facilita o acompanhamento de clonagens
+- **Categorização**: Use tópicos para organizar por tipo de conteúdo
+
+#### Configuração de Tópicos
+Para grupos com tópicos habilitados, você pode especificar um tópico específico:
+- Use `--topic <ID_TOPICO>` para publicar em um tópico específico
+- Use `python main.py list-topics --id <ID_GRUPO>` para descobrir os IDs dos tópicos
+- Útil para organizar links por categoria (ex: "Canais de Tecnologia", "Canais de Marketing")
+- O ID do tópico pode ser obtido através do comando `list-topics` ou da API do Telegram
 
 ### Sistema de Resumo e Progresso
 O Clonechat mantém o progresso de todas as operações no banco de dados SQLite:
@@ -348,10 +410,25 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 # 1. Verificar acesso ao canal
 python main.py test-resolve --id -1002859374479
 
-# 2. Clonar com extração de áudio
-python main.py sync --origin -1002859374479 --force-download
+# 2. Clonar com extração de áudio e publicar links
+python main.py sync --origin -1002859374479 --force-download --publish-to -1001234567890
 
 # 3. Verificar links salvos
+cat links_canais.txt
+```
+
+### Fluxo Completo de Clonagem com Tópicos
+```bash
+# 1. Verificar acesso ao canal
+python main.py test-resolve --id -1002859374479
+
+# 2. Listar tópicos do grupo onde publicar
+python main.py list-topics --id -1001234567890
+
+# 3. Clonar e publicar em tópico específico
+python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
+
+# 4. Verificar links salvos
 cat links_canais.txt
 ```
 
@@ -383,6 +460,9 @@ python main.py test-resolve --id @canal_username
 
 # Listar todos os chats
 python main.py list-chats
+
+# Listar tópicos de um grupo
+python main.py list-topics --id -1001234567890
 ```
 
 ### Uso Avançado
@@ -393,9 +473,15 @@ python main.py sync --origin -1002859374479 --dest -1002749622339
 # Clonar e sair do canal origem
 python main.py sync --origin -1002859374479 --leave-origin
 
+# Clonar e publicar links em grupo
+python main.py sync --origin -1002859374479 --publish-to -1001234567890
+
+# Clonar e publicar em tópico específico
+python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
+
 # Download para diretório específico
 python main.py download --origin -1002859374479 --output ./meus_videos/
 
 # Processamento em lote
 python main.py sync --batch --source canais.txt
-``` 
+```
