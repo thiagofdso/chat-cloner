@@ -89,7 +89,9 @@ async def run_sync_async(
     batch: bool,
     source: Optional[str],
     restart: bool,
-    force_download: bool = False
+    force_download: bool = False,
+    leave_origin: bool = False,
+    dest: Optional[int] = None
 ) -> None:
     """
     Async wrapper for the sync operation.
@@ -100,6 +102,8 @@ async def run_sync_async(
         source: Source file for batch processing.
         restart: Whether to restart the sync.
         force_download: Whether to force download strategy for extracting audio from videos.
+        leave_origin: Whether to leave the origin channel after cloning.
+        dest: Destination channel ID (if None, creates a new channel).
     """
     try:
         log_operation_start(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
@@ -125,7 +129,7 @@ async def run_sync_async(
         logger.info("💾 Banco de dados inicializado")
         
         # Inicializar motor de clonagem
-        engine = ClonerEngine(config, client, force_download=force_download)
+        engine = ClonerEngine(config, client, force_download=force_download, leave_origin=leave_origin, dest_chat_id=dest)
         logger.info("🚀 Motor de clonagem inicializado")
         
         if batch:
@@ -200,6 +204,18 @@ def sync(
         "--force-download",
         "-f",
         help="Forçar estratégia download_upload para extrair áudio de vídeos"
+    ),
+    leave_origin: bool = typer.Option(
+        False,
+        "--leave-origin",
+        "-l",
+        help="Sair do canal de origem após a clonagem (por padrão não sai)"
+    ),
+    dest: Optional[int] = typer.Option(
+        None,
+        "--dest",
+        "-d",
+        help="ID do canal de destino (se não especificado, cria um novo canal)"
     )
 ):
     """
@@ -216,10 +232,15 @@ def sync(
     Use --force-download para sempre usar a estratégia download_upload,
     garantindo que o áudio seja extraído de todos os vídeos.
     
+    Use --dest para especificar um canal de destino existente em vez de criar um novo.
+    Use --leave-origin para sair do canal de origem após a clonagem.
+    
     Modos de uso:
     - Individual: python main.py sync --origin 123456789
-    - Batch: python main.py sync --batch --source chats.txt
     - Com extração de áudio: python main.py sync --origin 123456789 --force-download
+    - Para canal existente: python main.py sync --origin 123456789 --dest 987654321
+    - Sair do canal origem: python main.py sync --origin 123456789 --leave-origin
+    - Batch: python main.py sync --batch --source chats.txt
     """
     try:
         log_operation_start(logger, "sync_command", origin=origin, batch=batch, restart=restart)
@@ -237,7 +258,7 @@ def sync(
                 raise typer.BadParameter("--source só deve ser usado com --batch")
         
         # Executar operação assíncrona
-        asyncio.run(run_sync_async(origin, batch, source, restart, force_download))
+        asyncio.run(run_sync_async(origin, batch, source, restart, force_download, leave_origin, dest))
         
         log_operation_success(logger, "sync_command", origin=origin, batch=batch, restart=restart)
         

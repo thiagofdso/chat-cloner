@@ -113,7 +113,7 @@ class ClonerEngine:
     Main cloning engine that handles automatic strategy detection and chat synchronization.
     """
     
-    def __init__(self, config: Config, client: Client, force_download: bool = False):
+    def __init__(self, config: Config, client: Client, force_download: bool = False, leave_origin: bool = False, dest_chat_id: Optional[int] = None):
         """
         Initialize the ClonerEngine.
         
@@ -121,10 +121,14 @@ class ClonerEngine:
             config: Configuration object with Telegram credentials and settings.
             client: Pyrogram client instance.
             force_download: If True, force download_upload strategy for audio extraction.
+            leave_origin: If True, leave the origin channel after cloning.
+            dest_chat_id: Destination channel ID (if None, creates a new channel).
         """
         self.config = config
         self.client = client
         self.force_download = force_download
+        self.leave_origin = leave_origin
+        self.dest_chat_id = dest_chat_id
         self.logger = get_logger(__name__)
         
         # Log configuration
@@ -146,6 +150,14 @@ class ClonerEngine:
         
         if force_download:
             logger.info("🔧 Force download mode enabled - will use download_upload strategy for audio extraction")
+        
+        if leave_origin:
+            logger.info("👋 Leave origin mode enabled - will leave origin channel after cloning")
+        
+        if dest_chat_id:
+            logger.info(f"🎯 Using existing destination channel: {dest_chat_id}")
+        else:
+            logger.info("🆕 Will create new destination channel")
         
     async def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
         """
@@ -183,8 +195,22 @@ class ClonerEngine:
             log_operation_error(logger, "get_or_create_sync_task", e, origin_chat_id=origin_chat_id)
             raise ValueError(f"Cannot access origin chat {origin_chat_id}: {e}")
         
-        # Create destination channel
-        dest_chat_id = await self.create_destination_channel(origin_title)
+        # Create destination channel or use existing one
+        if self.dest_chat_id:
+            # Use existing destination channel
+            dest_chat_id = self.dest_chat_id
+            logger.info(f"🎯 Using existing destination channel: {dest_chat_id}")
+            
+            # Verify the destination channel exists and we have access
+            try:
+                dest_chat = await self.client.get_chat(dest_chat_id)
+                logger.info(f"✅ Destination channel verified: {dest_chat.title} (ID: {dest_chat_id})")
+            except (ChannelInvalid, PeerIdInvalid) as e:
+                log_operation_error(logger, "get_or_create_sync_task", e, dest_chat_id=dest_chat_id)
+                raise ValueError(f"Cannot access destination chat {dest_chat_id}: {e}")
+        else:
+            # Create new destination channel
+            dest_chat_id = await self.create_destination_channel(origin_title)
         
         # Create task in database
         create_task(origin_chat_id, origin_title, dest_chat_id)
@@ -391,7 +417,7 @@ class ClonerEngine:
     
     async def _post_cloning_actions(self, origin_chat_id: int, origin_title: str, dest_chat_id: int) -> None:
         """
-        Perform post-cloning actions: save channel link and leave origin channel.
+        Perform post-cloning actions: save channel link and optionally leave origin channel.
         
         Args:
             origin_chat_id: The origin chat ID.
@@ -404,8 +430,11 @@ class ClonerEngine:
             # Save channel link to file
             save_channel_link(origin_title, dest_chat_id)
             
-            # Leave the origin channel
-            await leave_origin_channel(self.client, origin_chat_id, origin_title)
+            # Leave the origin channel only if leave_origin is enabled
+            if self.leave_origin:
+                await leave_origin_channel(self.client, origin_chat_id, origin_title)
+            else:
+                logger.info(f"👋 Staying in origin channel: {origin_title} (leave_origin=False)")
             
             logger.info(f"🎉 Post-cloning actions completed for {origin_title}")
             log_operation_success(logger, "post_cloning_actions", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
