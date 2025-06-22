@@ -63,8 +63,33 @@ def init_db() -> None:
             )
         """)
         
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS PublishTasks (
+                source_folder_path TEXT PRIMARY KEY,
+                project_name TEXT NOT NULL,
+                destination_chat_id INTEGER,
+                current_step TEXT,
+                status TEXT DEFAULT 'pending',
+                -- Flags para cada etapa do pipeline Zimatise (baseado no zimatise_monitor.py)
+                is_started BOOLEAN DEFAULT 0,
+                is_zipped BOOLEAN DEFAULT 0,
+                is_reported BOOLEAN DEFAULT 0,
+                is_reencode_auth BOOLEAN DEFAULT 0,
+                is_reencoded BOOLEAN DEFAULT 0,
+                is_joined BOOLEAN DEFAULT 0,
+                is_timestamped BOOLEAN DEFAULT 0,
+                is_upload_auth BOOLEAN DEFAULT 0,
+                is_published BOOLEAN DEFAULT 0,
+                -- Rastreamento de upload
+                last_uploaded_file TEXT,
+                -- Timestamps
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         conn.commit()
-        log_database_operation(logger, "init_db", table="SyncTasks, DownloadTasks")
+        log_database_operation(logger, "init_db", table="SyncTasks, DownloadTasks, PublishTasks")
         log_operation_success(logger, "init_db")
         
     except sqlite3.Error as e:
@@ -354,6 +379,243 @@ def delete_download_task(origin_id: int) -> None:
         
     except sqlite3.Error as e:
         log_operation_error(logger, "delete_download_task", e, origin_chat_id=origin_id)
+        raise
+    finally:
+        conn.close()
+
+
+def create_publish_task(source_folder: str, project_name: str) -> dict:
+    """
+    Create a new publish task.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        project_name: The name of the project (derived from folder name).
+        
+    Returns:
+        dict: The created task data.
+        
+    Raises:
+        sqlite3.IntegrityError: If a task already exists for this source folder.
+    """
+    log_operation_start(logger, "create_publish_task", source_folder=source_folder, project_name=project_name)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            INSERT INTO PublishTasks (source_folder_path, project_name)
+            VALUES (?, ?)
+        """, (source_folder, project_name))
+        
+        conn.commit()
+        
+        # Get the created task data
+        cursor.execute("""
+            SELECT * FROM PublishTasks WHERE source_folder_path = ?
+        """, (source_folder,))
+        
+        row = cursor.fetchone()
+        task_data = dict(row) if row else {}
+        
+        log_database_operation(logger, "create_publish_task_success", source_folder=source_folder, project_name=project_name)
+        log_operation_success(logger, "create_publish_task", source_folder=source_folder, project_name=project_name)
+        
+        return task_data
+        
+    except sqlite3.IntegrityError:
+        log_operation_error(logger, "create_publish_task", sqlite3.IntegrityError("Task already exists"), source_folder=source_folder)
+        logger.warning(f"⚠️ Publish task already exists for source_folder={source_folder}")
+        raise
+    except sqlite3.Error as e:
+        log_operation_error(logger, "create_publish_task", e, source_folder=source_folder, project_name=project_name)
+        raise
+    finally:
+        conn.close()
+
+
+def get_publish_task(source_folder: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a publish task by source folder path.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        
+    Returns:
+        Optional[Dict[str, Any]]: Publish task data if found, None otherwise.
+    """
+    log_database_operation(logger, "get_publish_task", source_folder=source_folder)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT * FROM PublishTasks WHERE source_folder_path = ?
+        """, (source_folder,))
+        
+        row = cursor.fetchone()
+        if row:
+            task_data = dict(row)
+            log_database_operation(logger, "get_publish_task_success", source_folder=source_folder, task_found=True)
+            return task_data
+        
+        log_database_operation(logger, "get_publish_task_not_found", source_folder=source_folder)
+        return None
+        
+    except sqlite3.Error as e:
+        log_operation_error(logger, "get_publish_task", e, source_folder=source_folder)
+        raise
+    finally:
+        conn.close()
+
+
+def update_publish_task_step(source_folder: str, step_flag: str, status: bool) -> None:
+    """
+    Update a specific step flag for a publish task.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        step_flag: The step flag to update (e.g., 'is_zipped', 'is_reported').
+        status: The new status (True/False).
+    """
+    log_operation_start(logger, "update_publish_task_step", source_folder=source_folder, step_flag=step_flag, status=status)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(f"""
+            UPDATE PublishTasks 
+            SET {step_flag} = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE source_folder_path = ?
+        """, (1 if status else 0, source_folder))
+        
+        if cursor.rowcount == 0:
+            log_operation_error(logger, "update_publish_task_step", ValueError("No task found"), source_folder=source_folder)
+            logger.warning(f"⚠️ No publish task found for source_folder={source_folder}")
+            return
+            
+        conn.commit()
+        log_database_operation(logger, "update_publish_task_step_success", source_folder=source_folder, step_flag=step_flag, status=status)
+        log_operation_success(logger, "update_publish_task_step", source_folder=source_folder, step_flag=step_flag, status=status)
+        
+    except sqlite3.Error as e:
+        log_operation_error(logger, "update_publish_task_step", e, source_folder=source_folder, step_flag=step_flag, status=status)
+        raise
+    finally:
+        conn.close()
+
+
+def update_publish_task_progress(source_folder: str, current_step: str, last_file: str = None) -> None:
+    """
+    Update the current step and optionally the last uploaded file for a publish task.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        current_step: The name of the current step being executed.
+        last_file: The last file that was processed (optional).
+    """
+    log_operation_start(logger, "update_publish_task_progress", source_folder=source_folder, current_step=current_step, last_file=last_file)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        if last_file:
+            cursor.execute("""
+                UPDATE PublishTasks 
+                SET current_step = ?, last_uploaded_file = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE source_folder_path = ?
+            """, (current_step, last_file, source_folder))
+        else:
+            cursor.execute("""
+                UPDATE PublishTasks 
+                SET current_step = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE source_folder_path = ?
+            """, (current_step, source_folder))
+        
+        if cursor.rowcount == 0:
+            log_operation_error(logger, "update_publish_task_progress", ValueError("No task found"), source_folder=source_folder)
+            logger.warning(f"⚠️ No publish task found for source_folder={source_folder}")
+            return
+            
+        conn.commit()
+        log_database_operation(logger, "update_publish_task_progress_success", source_folder=source_folder, current_step=current_step, last_file=last_file or "")
+        log_operation_success(logger, "update_publish_task_progress", source_folder=source_folder, current_step=current_step, last_file=last_file or "")
+        
+    except sqlite3.Error as e:
+        log_operation_error(logger, "update_publish_task_progress", e, source_folder=source_folder, current_step=current_step, last_file=last_file or "")
+        raise
+    finally:
+        conn.close()
+
+
+def set_publish_destination_chat(source_folder: str, chat_id: int) -> None:
+    """
+    Set the destination chat ID for a publish task.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        chat_id: The destination chat ID in Telegram.
+    """
+    log_operation_start(logger, "set_publish_destination_chat", source_folder=source_folder, chat_id=chat_id)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            UPDATE PublishTasks 
+            SET destination_chat_id = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE source_folder_path = ?
+        """, (chat_id, source_folder))
+        
+        if cursor.rowcount == 0:
+            log_operation_error(logger, "set_publish_destination_chat", ValueError("No task found"), source_folder=source_folder)
+            logger.warning(f"⚠️ No publish task found for source_folder={source_folder}")
+            return
+            
+        conn.commit()
+        log_database_operation(logger, "set_publish_destination_chat_success", source_folder=source_folder, chat_id=chat_id)
+        log_operation_success(logger, "set_publish_destination_chat", source_folder=source_folder, chat_id=chat_id)
+        
+    except sqlite3.Error as e:
+        log_operation_error(logger, "set_publish_destination_chat", e, source_folder=source_folder, chat_id=chat_id)
+        raise
+    finally:
+        conn.close()
+
+
+def delete_publish_task(source_folder: str) -> None:
+    """
+    Delete a publish task (for restart functionality).
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+    """
+    log_operation_start(logger, "delete_publish_task", source_folder=source_folder)
+    
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            DELETE FROM PublishTasks WHERE source_folder_path = ?
+        """, (source_folder,))
+        
+        if cursor.rowcount == 0:
+            log_operation_error(logger, "delete_publish_task", ValueError("No task found"), source_folder=source_folder)
+            logger.warning(f"⚠️ No publish task found for source_folder={source_folder}")
+            return
+            
+        conn.commit()
+        log_database_operation(logger, "delete_publish_task_success", source_folder=source_folder)
+        log_operation_success(logger, "delete_publish_task", source_folder=source_folder)
+        
+    except sqlite3.Error as e:
+        log_operation_error(logger, "delete_publish_task", e, source_folder=source_folder)
         raise
     finally:
         conn.close() 
