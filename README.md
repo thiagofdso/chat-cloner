@@ -15,6 +15,10 @@ Ferramenta avançada para clonar chats do Telegram com arquitetura moderna e rec
 - **Processamento em Lote**: Suporte a múltiplos chats via arquivo
 - **Resumo de Tarefas**: Continua de onde parou automaticamente
 - **Arquitetura Async**: Performance otimizada com asyncio
+- **Download de Vídeos**: Comando dedicado para baixar vídeos com extração de áudio
+- **Sistema de Resumo**: Banco de dados para rastrear progresso de downloads
+- **Identificação Flexível**: Aceita IDs, usernames e links do Telegram
+- **Controle de Progresso**: Opções para limitar downloads e forçar restart
 
 ## 📋 Pré-requisitos
 
@@ -107,12 +111,70 @@ python main.py sync --origin <ID_DO_CANAL> --restart
 python main.py version
 ```
 
+### Inicializar Banco de Dados
+```bash
+python main.py init-database
+```
+- Inicializa ou atualiza o banco de dados
+- Cria as tabelas necessárias (SyncTasks e DownloadTasks)
+- Útil após atualizações que adicionam novas tabelas
+
+### Listar Chats Disponíveis
+```bash
+python main.py list-chats
+```
+- Lista todos os chats, grupos e canais que o usuário tem acesso
+- Mostra ID, nome e tipo de cada chat
+- Útil para verificar IDs corretos dos canais
+
+### Testar Resolução de Chat
+```bash
+python main.py test-resolve --id <ID_DO_CANAL>
+```
+- Testa se um ID, username ou link de chat pode ser resolvido
+- Verifica se o usuário tem acesso ao chat
+- Útil para diagnosticar problemas de acesso
+
+### Download de Vídeos com Extração de Áudio
+```bash
+python main.py download --origin <ID_DO_CANAL>
+```
+- Baixa todos os vídeos de um canal
+- Extrai automaticamente o áudio de cada vídeo em MP3
+- Mantém tanto o vídeo quanto o áudio
+- Salva os arquivos organizados por data e ID da mensagem
+- **Resume automaticamente** de onde parou se interrompido
+
+### Download com Limite de Vídeos
+```bash
+python main.py download --origin <ID_DO_CANAL> --limit 10
+```
+- Baixa apenas os 10 vídeos mais recentes
+- Útil para testar ou baixar apenas alguns vídeos
+
+### Download para Diretório Específico
+```bash
+python main.py download --origin <ID_DO_CANAL> --output ./meus_videos/
+```
+- Salva os arquivos em um diretório específico
+- Por padrão, salva em `./downloads/Nome_do_Canal/`
+
+### Download com Restart (Força Novo Download)
+```bash
+python main.py download --origin <ID_DO_CANAL> --restart
+```
+- Força um novo download do zero
+- Apaga dados anteriores de progresso
+- Útil quando quer recomeçar completamente
+
 ## 📁 Estrutura do Projeto
 
 ```
 chatclone/
 ├── data/
 │   ├── clonechat.db         # Banco de dados SQLite
+│   │   ├── SyncTasks        # Tarefas de clonagem
+│   │   └── DownloadTasks    # Tarefas de download
 │   ├── downloads/           # Arquivos temporários e áudio extraído
 │   │   └── -100123456789 - Nome do Canal/
 │   │       ├── 2-video.mp4          # Vídeo original (apagado após upload)
@@ -169,6 +231,9 @@ Crie um arquivo de texto com IDs de chat, um por linha:
 - **Logging Estruturado**: Logs detalhados com formatação colorida
 - **Retry Inteligente**: Tratamento automático de erros do Telegram
 - **Progresso Persistente**: Continua de onde parou em execuções subsequentes
+- **Sistema de Resumo**: Tarefas de clonagem e download são salvas no banco de dados
+- **Download com Resumo**: Downloads podem ser interrompidos e retomados automaticamente
+- **Identificação Flexível**: Aceita IDs, usernames e links do Telegram
 
 ### Arquivo de Links dos Canais
 Após cada clonagem, o arquivo `links_canais.txt` é atualizado com:
@@ -178,6 +243,31 @@ https://t.me/c/1234567890/1
 Nome do Canal Original 2
 https://t.me/c/9876543210/1
 ```
+
+### Sistema de Resumo e Progresso
+O Clonechat mantém o progresso de todas as operações no banco de dados SQLite:
+
+#### Tabela SyncTasks (Clonagem)
+- `origin_chat_id`: ID do canal de origem
+- `origin_chat_title`: Nome do canal de origem
+- `destination_chat_id`: ID do canal de destino
+- `cloning_strategy`: Estratégia usada (forward/download_upload)
+- `last_synced_message_id`: ID da última mensagem sincronizada
+
+#### Tabela DownloadTasks (Download de Vídeos)
+- `origin_chat_id`: ID do canal de origem
+- `origin_chat_title`: Nome do canal de origem
+- `last_downloaded_message_id`: ID da última mensagem baixada
+- `total_videos`: Total de vídeos no canal
+- `downloaded_videos`: Número de vídeos já baixados
+- `created_at`: Data de criação da tarefa
+- `updated_at`: Data da última atualização
+
+#### Benefícios do Sistema de Resumo
+- **Interrupção Segura**: Pode parar e retomar operações a qualquer momento
+- **Eficiência**: Não reprocessa conteúdo já baixado/clonado
+- **Transparência**: Mostra progresso detalhado das operações
+- **Controle**: Opção `--restart` para forçar novo processamento
 
 ## 🐛 Solução de Problemas
 
@@ -199,9 +289,26 @@ TELEGRAM_API_ID is required
 ```
 **Solução**: Configure corretamente o arquivo `.env`.
 
+### Erro de tabela não encontrada
+```
+no such table: DownloadTasks
+```
+**Solução**: Execute `python main.py init-database` para criar as tabelas necessárias.
+
+### Erro de acesso a chat
+```
+Cannot resolve chat identifier
+```
+**Solução**: 
+- Verifique se você é membro do canal/grupo
+- Use `python main.py list-chats` para ver os chats disponíveis
+- Use `python main.py test-resolve --id <ID>` para testar acesso específico
+
 ### Áudio não sendo extraído
-**Problema**: Usando estratégia `forward` que não extrai áudio.
-**Solução**: Use a opção `--force-download` para forçar extração de áudio.
+```
+FFmpeg not found in PATH
+```
+**Solução**: Instale o FFmpeg e adicione ao PATH do Windows.
 
 ## 📝 Logs
 
@@ -226,10 +333,69 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 
 - O FFmpeg **deve** estar instalado e disponível no PATH antes de rodar o projeto
 - O Build Tools do Visual Studio é necessário para instalar a dependência nativa `tgcrypto`
-- O arquivo `.env` **não** deve ser versionado
+- O arquivo `.env**não** deve ser versionado
 - Use o modo `--restart` com cuidado, pois apaga dados anteriores
 - O sistema cria automaticamente canais de destino (a menos que `--dest` seja especificado)
 - Use `--force-download` para garantir extração de áudio de todos os vídeos
 - Os arquivos MP3 extraídos são preservados na pasta do canal
 - Por padrão, o sistema **não sai** do canal de origem (use `--leave-origin` se necessário)
 - Ao usar `--dest`, certifique-se de ter permissões de escrita no canal de destino 
+
+## 💡 Exemplos Práticos
+
+### Fluxo Completo de Clonagem
+```bash
+# 1. Verificar acesso ao canal
+python main.py test-resolve --id -1002859374479
+
+# 2. Clonar com extração de áudio
+python main.py sync --origin -1002859374479 --force-download
+
+# 3. Verificar links salvos
+cat links_canais.txt
+```
+
+### Fluxo de Download de Vídeos
+```bash
+# 1. Listar canais disponíveis
+python main.py list-chats
+
+# 2. Baixar vídeos com limite
+python main.py download --origin -1002859374479 --limit 5
+
+# 3. Se interrompido, retomar automaticamente
+python main.py download --origin -1002859374479
+
+# 4. Para forçar novo download
+python main.py download --origin -1002859374479 --restart
+```
+
+### Diagnóstico de Problemas
+```bash
+# Verificar versão
+python main.py version
+
+# Inicializar banco de dados
+python main.py init-database
+
+# Testar acesso específico
+python main.py test-resolve --id @canal_username
+
+# Listar todos os chats
+python main.py list-chats
+```
+
+### Uso Avançado
+```bash
+# Clonar para canal existente
+python main.py sync --origin -1002859374479 --dest -1002749622339
+
+# Clonar e sair do canal origem
+python main.py sync --origin -1002859374479 --leave-origin
+
+# Download para diretório específico
+python main.py download --origin -1002859374479 --output ./meus_videos/
+
+# Processamento em lote
+python main.py sync --batch --source canais.txt
+``` 
