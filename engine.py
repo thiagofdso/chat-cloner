@@ -52,6 +52,56 @@ def delete_task(origin_id: int) -> None:
         conn.close()
 
 
+def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
+    """
+    Save the cloned channel link to links_canais.txt.
+    
+    Args:
+        origin_title: The title of the origin channel.
+        dest_chat_id: The destination channel ID.
+    """
+    try:
+        # Generate the channel link
+        channel_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
+        
+        # Create the links file if it doesn't exist
+        links_file = Path("links_canais.txt")
+        
+        # Write the channel info
+        with open(links_file, 'a', encoding='utf-8') as f:
+            f.write(f"{origin_title}\n")
+            f.write(f"{channel_link}\n")
+            f.write("-" * 50 + "\n")  # Separator
+        
+        logger.info(f"📝 Channel link saved: {origin_title} -> {channel_link}")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to save channel link: {e}")
+
+
+async def leave_origin_channel(client: Client, origin_chat_id: int, origin_title: str) -> None:
+    """
+    Leave the origin channel after cloning is complete.
+    
+    Args:
+        client: The Pyrogram client.
+        origin_chat_id: The origin chat ID.
+        origin_title: The title of the origin channel.
+    """
+    try:
+        log_operation_start(logger, "leave_origin_channel", origin_chat_id=origin_chat_id, origin_title=origin_title)
+        
+        # Leave the channel
+        await client.leave_chat(origin_chat_id)
+        
+        logger.info(f"👋 Left origin channel: {origin_title} (ID: {origin_chat_id})")
+        log_operation_success(logger, "leave_origin_channel", origin_chat_id=origin_chat_id, origin_title=origin_title)
+        
+    except Exception as e:
+        log_operation_error(logger, "leave_origin_channel", e, origin_chat_id=origin_chat_id, origin_title=origin_title)
+        logger.warning(f"⚠️ Failed to leave origin channel {origin_title}: {e}")
+
+
 class ClonerEngine:
     """
     Main cloning engine that handles automatic strategy detection and chat synchronization.
@@ -236,6 +286,7 @@ class ClonerEngine:
         
         origin_chat_id = task['origin_chat_id']
         dest_chat_id = task['destination_chat_id']
+        origin_title = task['origin_chat_title']
         strategy = task['cloning_strategy']
         last_synced_id = task['last_synced_message_id']
         
@@ -299,9 +350,37 @@ class ClonerEngine:
             log_operation_success(logger, "sync_chat", origin_chat_id=origin_chat_id, processed_messages=processed_count, total_messages=total_messages)
             logger.info(f"✅ Sync completed for chat {origin_chat_id}: {processed_count}/{total_messages} messages processed")
             
+            # Post-cloning actions
+            await self._post_cloning_actions(origin_chat_id, origin_title, dest_chat_id)
+            
         except Exception as e:
             log_operation_error(logger, "sync_chat", e, origin_chat_id=origin_chat_id)
             raise
+    
+    async def _post_cloning_actions(self, origin_chat_id: int, origin_title: str, dest_chat_id: int) -> None:
+        """
+        Perform post-cloning actions: save channel link and leave origin channel.
+        
+        Args:
+            origin_chat_id: The origin chat ID.
+            origin_title: The title of the origin channel.
+            dest_chat_id: The destination channel ID.
+        """
+        try:
+            log_operation_start(logger, "post_cloning_actions", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
+            
+            # Save channel link to file
+            save_channel_link(origin_title, dest_chat_id)
+            
+            # Leave the origin channel
+            await leave_origin_channel(self.client, origin_chat_id, origin_title)
+            
+            logger.info(f"🎉 Post-cloning actions completed for {origin_title}")
+            log_operation_success(logger, "post_cloning_actions", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
+            
+        except Exception as e:
+            log_operation_error(logger, "post_cloning_actions", e, origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
+            logger.warning(f"⚠️ Some post-cloning actions failed: {e}")
     
     async def _forward_message(self, message, dest_chat_id: int) -> None:
         """

@@ -22,6 +22,9 @@ clonechat/
 *_example.txt
 chats_*.txt
 
+# Channel links
+links_canais.txt
+
 # Python
 __pycache__/
 *.py[cod]
