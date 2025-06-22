@@ -136,7 +136,7 @@ class ClonerEngine:
         self.download_path.mkdir(parents=True, exist_ok=True)
         logger.info(f"📁 Download directory ready: {self.download_path}")
         
-    def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
+    async def get_or_create_sync_task(self, origin_chat_id: int, restart: bool = False) -> Dict[str, Any]:
         """
         Get existing sync task or create a new one with destination channel.
         
@@ -164,7 +164,7 @@ class ClonerEngine:
         
         # Get origin chat information
         try:
-            origin_chat = self.client.get_chat(origin_chat_id)
+            origin_chat = await self.client.get_chat(origin_chat_id)
             origin_title = origin_chat.title
             logger.info(f"📢 Origin chat: {origin_title} (ID: {origin_chat_id})")
         except (ChannelInvalid, PeerIdInvalid) as e:
@@ -172,14 +172,14 @@ class ClonerEngine:
             raise ValueError(f"Cannot access origin chat {origin_chat_id}: {e}")
         
         # Create destination channel
-        dest_chat_id = self.create_destination_channel(origin_title)
+        dest_chat_id = await self.create_destination_channel(origin_title)
         
         # Create task in database
         create_task(origin_chat_id, origin_title, dest_chat_id)
         log_database_operation(logger, "create_task", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
         
         # Determine strategy
-        strategy = self.determine_strategy(origin_chat_id)
+        strategy = await self.determine_strategy(origin_chat_id)
         update_strategy(origin_chat_id, strategy)
         log_database_operation(logger, "update_strategy", origin_chat_id=origin_chat_id, strategy=strategy)
         
@@ -192,7 +192,7 @@ class ClonerEngine:
         log_operation_success(logger, "get_or_create_sync_task", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id, strategy=strategy)
         return task
     
-    def determine_strategy(self, origin_chat_id: int) -> str:
+    async def determine_strategy(self, origin_chat_id: int) -> str:
         """
         Determine the best cloning strategy by testing forward restrictions.
         
@@ -216,7 +216,7 @@ class ClonerEngine:
             
             # Try to forward the message to ourselves to test restrictions
             try:
-                self.client.forward_messages(
+                await self.client.forward_messages(
                     chat_id="me",
                     from_chat_id=origin_chat_id,
                     message_ids=test_message.id
@@ -240,7 +240,7 @@ class ClonerEngine:
             log_strategy_detection(logger, "download_upload", origin_chat_id)
             return "download_upload"
     
-    def create_destination_channel(self, origin_title: str) -> int:
+    async def create_destination_channel(self, origin_title: str) -> int:
         """
         Create a destination channel with [CLONE] prefix.
         
@@ -256,7 +256,7 @@ class ClonerEngine:
         
         try:
             # Create the channel
-            dest_chat = self.client.create_channel(
+            dest_chat = await self.client.create_channel(
                 title=dest_title,
                 description=f"Cloned from {origin_title}"
             )
@@ -282,7 +282,7 @@ class ClonerEngine:
         log_operation_start(logger, "sync_chat", origin_chat_id=origin_chat_id, restart=restart)
         
         # Get or create sync task
-        task = self.get_or_create_sync_task(origin_chat_id, restart=restart)
+        task = await self.get_or_create_sync_task(origin_chat_id, restart=restart)
         
         origin_chat_id = task['origin_chat_id']
         dest_chat_id = task['destination_chat_id']
