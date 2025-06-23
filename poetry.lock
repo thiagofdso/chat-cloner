@@ -626,4 +626,4 @@ unidecode = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "454027c35bb3196463ba8511c8457dcf63cbadded5cd744069958bebbfb667f9"
+content-hash = "b00ba8ee35c8fce8abe4a82ad38c7e01ce613fd91fd28568f5ba7ceb23712b85"

@@ -508,7 +508,7 @@ def update_publish_task_step(source_folder: str, step_flag: str, status: bool) -
         conn.close()
 
 
-def update_publish_task_progress(source_folder: str, current_step: str, last_file: str = None) -> None:
+def update_publish_task_progress(source_folder: str, current_step: str, last_file: Optional[str] = None) -> None:
     """
     Update the current step and optionally the last uploaded file for a publish task.
     

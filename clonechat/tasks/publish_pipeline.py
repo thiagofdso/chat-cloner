@@ -3,17 +3,19 @@ Publish Pipeline implementation for Clonechat.
 Handles the processing and publishing of local folders to Telegram.
 """
 import asyncio
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 from datetime import datetime
+import csv
 
 from pyrogram import Client
 import zipind
 import vidtool
 
 from ..logging_config import get_logger
-from ..database import update_publish_task_step, update_publish_task_progress
+from ..database import update_publish_task_step, update_publish_task_progress, set_publish_destination_chat
 from ..config import load_config
+from ..processor import extract_audio_from_video, delete_local_media, upload_media
 
 logger = get_logger(__name__)
 
@@ -437,8 +439,8 @@ class PublishPipeline:
         """
         Step 6: Upload files to Telegram.
         
-        This step will be implemented in Phase 3.
-        For now, it's a placeholder that simulates successful upload.
+        This step uploads all processed files to a Telegram channel and
+        pins the summary message. No audio extraction is performed.
         
         Returns:
             bool: True if successful, False otherwise.
@@ -449,11 +451,97 @@ class PublishPipeline:
             # Update progress
             await self._update_progress("uploading", "Preparando upload para Telegram")
             
-            # TODO: Implement actual upload logic in Phase 3
-            # For now, just simulate success
-            logger.info("📤 Upload será implementado na Fase 3")
-            logger.info("📁 Arquivos processados estão prontos para upload")
+            # Ensure destination channel exists
+            dest_chat_id = await self._ensure_destination_channel()
+            logger.info(f"🎯 Canal de destino confirmado: {dest_chat_id}")
             
+            # Read upload plan
+            files_to_upload = self._read_upload_plan()
+            
+            if not files_to_upload:
+                logger.warning("⚠️ No files found in upload plan")
+                # Try to upload summary anyway
+                await self._upload_summary_and_pin(dest_chat_id)
+                return True
+            
+            # Get last uploaded file for resume functionality
+            last_uploaded = self.task.get('last_uploaded_file', '')
+            started_uploading = False
+            
+            # Upload each file
+            total_files = len(files_to_upload)
+            uploaded_count = 0
+            
+            for i, file_info in enumerate(files_to_upload):
+                try:
+                    # Get file path and description
+                    file_output = file_info.get('file_output', '')
+                    description = file_info.get('description', '')
+                    
+                    if not file_output:
+                        logger.warning(f"⚠️ Skipping file with no output path at index {i}")
+                        continue
+                    
+                    file_path = Path(file_output)
+                    
+                    # Resume functionality: skip files already uploaded
+                    if last_uploaded and not started_uploading:
+                        if str(file_path) == last_uploaded:
+                            started_uploading = True
+                            logger.info(f"🔄 Resuming upload from: {file_path.name}")
+                        else:
+                            logger.info(f"⏭️ Skipping already uploaded: {file_path.name}")
+                            continue
+                    else:
+                        started_uploading = True
+                    
+                    # Update progress
+                    await self._update_progress(
+                        "uploading", 
+                        f"Enviando {file_path.name} ({i+1}/{total_files})",
+                        str(file_path)
+                    )
+                    
+                    # Upload file (no audio extraction)
+                    success = await self._upload_file(
+                        file_path, dest_chat_id, description
+                    )
+                    
+                    if success:
+                        uploaded_count += 1
+                        logger.info(f"✅ Uploaded {file_path.name} ({uploaded_count}/{total_files})")
+                        
+                        # Update last uploaded file in database
+                        from ..database import update_publish_task_progress
+                        update_publish_task_progress(
+                            self.task['source_folder_path'], 
+                            "uploading", 
+                            str(file_path)
+                        )
+                    else:
+                        logger.error(f"❌ Failed to upload {file_path.name}")
+                    
+                    # Small delay between uploads to avoid rate limits
+                    await asyncio.sleep(2)
+                    
+                except Exception as e:
+                    logger.error(f"❌ Error uploading file at index {i}: {e}")
+                    continue
+            
+            # Upload and pin summary
+            logger.info("📋 Uploading summary and pinning message")
+            summary_success = await self._upload_summary_and_pin(dest_chat_id)
+            
+            if summary_success:
+                logger.info("✅ Summary uploaded and pinned successfully")
+            else:
+                logger.warning("⚠️ Failed to upload or pin summary")
+            
+            # Mark upload as complete
+            update_publish_task_step(self.task['source_folder_path'], 'is_published', True)
+            await self._update_progress("completed", f"Upload concluído: {uploaded_count}/{total_files} arquivos")
+            
+            logger.info(f"🎉 Upload completed successfully: {uploaded_count}/{total_files} files uploaded")
             return True
             
         except Exception as e:
@@ -478,23 +566,250 @@ class PublishPipeline:
         except Exception as e:
             logger.error(f"❌ Erro ao atualizar status {step_flag}: {e}")
     
-    async def _update_progress(self, current_step: str, description: str) -> None:
+    async def _update_progress(self, current_step: str, description: str, last_file: Optional[str] = None) -> None:
         """
         Update the current progress in the database.
         
         Args:
             current_step: The current step being executed.
             description: Description of the current operation.
+            last_file: The last file that was processed (optional).
         """
         try:
             update_publish_task_progress(
                 self.task['source_folder_path'],
                 current_step,
-                description
+                last_file
             )
             logger.info(f"📈 Progresso atualizado: {current_step} - {description}")
         except Exception as e:
             logger.error(f"❌ Erro ao atualizar progresso: {e}")
+    
+    async def _ensure_destination_channel(self) -> int:
+        """
+        Ensure a destination channel exists for publishing.
+        
+        If no destination channel is set in the task, creates a new one.
+        If one exists, verifies access to it.
+        
+        Returns:
+            int: The destination channel ID.
+        """
+        try:
+            # Check if we already have a destination channel
+            if self.task.get('destination_chat_id'):
+                dest_chat_id = self.task['destination_chat_id']
+                logger.info(f"🎯 Using existing destination channel: {dest_chat_id}")
+                
+                # Verify the destination channel exists and we have access
+                try:
+                    dest_chat = await self.client.get_chat(dest_chat_id)
+                    logger.info(f"✅ Destination channel verified: {dest_chat.title} (ID: {dest_chat_id})")
+                    return dest_chat_id
+                except Exception as e:
+                    logger.warning(f"⚠️ Cannot access destination channel {dest_chat_id}: {e}")
+                    logger.info("🆕 Will create a new destination channel")
+            
+            # Create new destination channel
+            logger.info("🆕 Creating new destination channel for publishing")
+            
+            # Create channel title based on project name
+            channel_title = f"{self.project_name} - Publicação"
+            
+            # Create the channel
+            dest_chat = await self.client.create_channel(
+                title=channel_title,
+                description=f"Publicação automática do projeto: {self.project_name}"
+            )
+            
+            dest_chat_id = dest_chat.id
+            logger.info(f"✅ Destination channel created: {channel_title} (ID: {dest_chat_id})")
+            
+            # Save the destination channel ID to the database
+            set_publish_destination_chat(self.task['source_folder_path'], dest_chat_id)
+            logger.info(f"💾 Destination channel ID saved to database: {dest_chat_id}")
+            
+            return dest_chat_id
+            
+        except Exception as e:
+            logger.error(f"❌ Error ensuring destination channel: {e}")
+            raise
+    
+    def _read_upload_plan(self) -> List[Dict[str, str]]:
+        """
+        Read the upload_plan.csv file to get the list of files to upload.
+        
+        Returns:
+            List[Dict[str, str]]: List of file information dictionaries.
+        """
+        upload_plan_path = self.project_process_path / "upload_plan.csv"
+        
+        if not upload_plan_path.exists():
+            logger.warning(f"⚠️ Upload plan not found: {upload_plan_path}")
+            return []
+        
+        try:
+            files_to_upload = []
+            with open(upload_plan_path, 'r', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    files_to_upload.append(row)
+            
+            logger.info(f"📋 Found {len(files_to_upload)} files in upload plan")
+            return files_to_upload
+            
+        except Exception as e:
+            logger.error(f"❌ Error reading upload plan: {e}")
+            return []
+    
+    def _get_message_type(self, file_path: Path) -> str:
+        """
+        Determine the message type based on file extension.
+        
+        Args:
+            file_path: Path to the file.
+            
+        Returns:
+            str: Message type (video, document, photo, audio).
+        """
+        suffix = file_path.suffix.lower()
+        
+        if suffix in ['.mp4', '.mkv', '.avi', '.mov']:
+            return 'video'
+        elif suffix in ['.jpg', '.jpeg', '.png', '.gif']:
+            return 'photo'
+        elif suffix in ['.mp3', '.ogg', '.wav', '.flac']:
+            return 'audio'
+        else:
+            return 'document'
+    
+    async def _upload_file(self, file_path: Path, dest_chat_id: int, caption: str = "") -> bool:
+        """
+        Upload a file to Telegram (no audio extraction).
+        
+        Args:
+            file_path: Path to the file to upload.
+            dest_chat_id: Destination chat ID.
+            caption: Optional caption for the file.
+            
+        Returns:
+            bool: True if upload was successful.
+        """
+        try:
+            if not file_path.exists():
+                logger.warning(f"⚠️ File not found: {file_path}")
+                return False
+            
+            message_type = self._get_message_type(file_path)
+            logger.info(f"📤 Uploading {file_path.name} as {message_type}")
+            
+            # Upload the original file
+            await upload_media(
+                client=self.client,
+                file_path=file_path,
+                destination_chat=dest_chat_id,
+                caption=caption,
+                message_type=message_type
+            )
+            
+            logger.info(f"✅ Successfully uploaded {file_path.name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to upload {file_path.name}: {e}")
+            return False
+    
+    async def _upload_summary_and_pin(self, dest_chat_id: int) -> bool:
+        """
+        Upload the summary.txt file and pin it to the channel.
+        
+        Args:
+            dest_chat_id: Destination chat ID.
+            
+        Returns:
+            bool: True if successful.
+        """
+        try:
+            summary_path = self.project_process_path / "summary.txt"
+            
+            if not summary_path.exists():
+                logger.warning(f"⚠️ Summary file not found: {summary_path}")
+                return False
+            
+            # Read summary content
+            with open(summary_path, 'r', encoding='utf-8') as f:
+                summary_content = f.read()
+            
+            if not summary_content.strip():
+                logger.warning("⚠️ Summary file is empty")
+                return False
+            
+            logger.info("📋 Uploading summary to channel")
+            
+            # Split content if it's too long (Telegram limit is 4096 characters)
+            max_length = 4000
+            if len(summary_content) > max_length:
+                # Split by lines first
+                lines = summary_content.split('\n')
+                chunks = []
+                current_chunk = []
+                current_length = 0
+                
+                for line in lines:
+                    if current_length + len(line) + 1 > max_length:
+                        if current_chunk:
+                            chunks.append('\n'.join(current_chunk))
+                            current_chunk = [line]
+                            current_length = len(line)
+                        else:
+                            # Single line is too long, split by words
+                            words = line.split()
+                            for word in words:
+                                if current_length + len(word) + 1 > max_length:
+                                    if current_chunk:
+                                        chunks.append(' '.join(current_chunk))
+                                        current_chunk = [word]
+                                        current_length = len(word)
+                                    else:
+                                        chunks.append(word[:max_length])
+                                        current_chunk = []
+                                        current_length = 0
+                                else:
+                                    current_chunk.append(word)
+                                    current_length += len(word) + 1
+                    else:
+                        current_chunk.append(line)
+                        current_length += len(line) + 1
+                
+                if current_chunk:
+                    chunks.append('\n'.join(current_chunk))
+            else:
+                chunks = [summary_content]
+            
+            # Upload each chunk
+            first_message = None
+            for i, chunk in enumerate(chunks):
+                message = await self.client.send_message(
+                    chat_id=dest_chat_id,
+                    text=chunk,
+                    disable_notification=True
+                )
+                
+                if i == 0:
+                    first_message = message
+                    logger.info(f"📌 First summary message sent (ID: {message.id})")
+            
+            # Pin the first message
+            if first_message:
+                await self.client.pin_chat_message(dest_chat_id, first_message.id)
+                logger.info(f"📌 Summary message pinned (ID: {first_message.id})")
+            
+            logger.info("✅ Summary uploaded and pinned successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to upload and pin summary: {e}")
+            return False
     
     # Placeholder methods for future phases
     # Note: These methods are now implemented above 
