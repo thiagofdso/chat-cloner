@@ -1,0 +1,27 @@
+[project]
+name = "clonechat"
+version = "2.0.0"
+description = "Telegram chat cloning tool with advanced features"
+authors = [
+    {name = "Thiago Oliveira",email = "thiagofdso.ufpa@gmail.com"}
+]
+readme = "README.md"
+requires-python = "^3.9"
+dependencies = [
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "pyrogram (>=2.0.106,<3.0.0)",
+    "typer (>=0.16.0,<0.17.0)",
+    "tgcrypto (>=1.2.5,<2.0.0)",
+    "toml (>=0.10.0,<1.0.0)",
+    "zipind (>=1.1.3,<2.0.0)",
+    "vidtool (>=0.1.6,<0.2.0)",
+    "pandas (>=2.3.0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+chat-clone = "cli:main"

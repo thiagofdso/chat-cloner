@@ -1,0 +1,4 @@
+duration,duration_seconds,file_size,format_name,total_bitrate,video_bitrate,video_codec,audio_codec,is_avc,video_profile,video_resolution_height,video_resolution_width,path_file,file_path_folder,file_name,resolution,video_resolution_to_change,subfolder_n1
+00:00:26.04,26.043396,6553125,"mov,mp4,m4a,3gp,3g2,mj2",2012986,1693516,h264,aac,1,High,352,640,C:\4_anos_mel\video 1.mp4,C:\4_anos_mel,video 1.mp4,640x352,,4_anos_mel
+00:00:09.68,9.682292,2720925,"mov,mp4,m4a,3gp,3g2,mj2",2248166,1930862,h264,aac,1,High,352,640,C:\4_anos_mel\video 2.mp4,C:\4_anos_mel,video 2.mp4,640x352,,4_anos_mel
+00:00:30.66,30.66875,7474963,"mov,mp4,m4a,3gp,3g2,mj2",1949857,1627861,h264,aac,1,High,352,640,C:\4_anos_mel\video 3.mp4,C:\4_anos_mel,video 3.mp4,640x352,,4_anos_mel
