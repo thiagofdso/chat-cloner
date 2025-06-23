@@ -28,21 +28,38 @@ class Config:
     cloner_download_path: str
     
     # Zimatise pipeline configuration
-    file_size_limit_mb: int = 50
-    mode: str = "split"
-    video_extensions: str = "mp4,avi,mkv,mov,wmv,flv,webm"
-    reencode_plan: str = "group"
-    duration_limit: str = "00:30:00"
+    file_size_limit_mb: int = 1000
+    mode: str = "zip"
+    video_extensions: str = "mp4,avi,webm,ts,vob,mov,mkv,wmv,3gp,flv,ogv,ogg,rrc,gifv,mng,qt,yuv,rm,asf,amv,m4p,m4v,mpg,mp2,mpeg,mpe,mpv,svi,3g2,mxf,roq,nsv,f4v,f4p,f4a,f4b"
+    reencode_plan: str = "single"
+    duration_limit: str = "02:00:00.00"
     activate_transition: str = "false"
     start_index: int = 1
-    hashtag_index: str = "false"
+    hashtag_index: str = "F"
     descriptions_auto_adapt: str = "true"
-    silent_mode: str = "false"
+    silent_mode: str = "true"
     path_summary_top: str = "summary_top.txt"
     path_summary_bot: str = "summary_bot.txt"
-    document_hashtag: str = "#document"
-    document_title: str = "Document"
+    document_hashtag: str = "Materiais"
+    document_title: str = "Materiais"
     register_invite_link: str = "1"
+    
+    # Channel description configuration
+    channel_title_prefix: str = "Academy"
+    channel_size_label: str = "Tamanho"
+    channel_duration_label: str = "Duração"
+    channel_invite_label: str = "Convite"
+    
+    # Additional Zimatise configurations
+    max_path: int = 260
+    create_new_channel: str = "1"
+    chat_id: str = "-100111111111"
+    moc_chat_id: str = "-10022222222"
+    autodel_video_temp: str = "1"
+    channel_adms: str = ""
+    time_limit: str = "99"
+    send_moc: str = "0"
+    move_to_uploaded: str = "1"
 
 
 def load_config() -> Config:
@@ -70,21 +87,32 @@ def load_config() -> Config:
     cloner_download_path = os.getenv('CLONER_DOWNLOAD_PATH', './data/downloads/')
     
     # Zimatise pipeline configuration
-    file_size_limit_mb = int(os.getenv('FILE_SIZE_LIMIT_MB', '50'))
-    mode = os.getenv('MODE', 'split')
-    video_extensions = os.getenv('VIDEO_EXTENSIONS', 'mp4,avi,mkv,mov,wmv,flv,webm')
-    reencode_plan = os.getenv('REENCODE_PLAN', 'group')
-    duration_limit = os.getenv('DURATION_LIMIT', '00:30:00')
+    file_size_limit_mb = int(os.getenv('FILE_SIZE_LIMIT_MB', '1000'))
+    mode = os.getenv('MODE', 'zip')
+    video_extensions = os.getenv('VIDEO_EXTENSIONS', 'mp4,avi,webm,ts,vob,mov,mkv,wmv,3gp,flv,ogv,ogg,rrc,gifv,mng,qt,yuv,rm,asf,amv,m4p,m4v,mpg,mp2,mpeg,mpe,mpv,svi,3g2,mxf,roq,nsv,f4v,f4p,f4a,f4b')
+    reencode_plan = os.getenv('REENCODE_PLAN', 'single')
+    duration_limit = os.getenv('DURATION_LIMIT', '02:00:00.00')
     activate_transition = os.getenv('ACTIVATE_TRANSITION', 'false')
     start_index = int(os.getenv('START_INDEX', '1'))
-    hashtag_index = os.getenv('HASHTAG_INDEX', 'false')
+    hashtag_index = os.getenv('HASHTAG_INDEX', 'F')
     descriptions_auto_adapt = os.getenv('DESCRIPTIONS_AUTO_ADAPT', 'true')
-    silent_mode = os.getenv('SILENT_MODE', 'false')
+    silent_mode = os.getenv('SILENT_MODE', 'true')
     path_summary_top = os.getenv('PATH_SUMMARY_TOP', 'summary_top.txt')
     path_summary_bot = os.getenv('PATH_SUMMARY_BOT', 'summary_bot.txt')
-    document_hashtag = os.getenv('DOCUMENT_HASHTAG', '#document')
-    document_title = os.getenv('DOCUMENT_TITLE', 'Document')
+    document_hashtag = os.getenv('DOCUMENT_HASHTAG', 'Materiais')
+    document_title = os.getenv('DOCUMENT_TITLE', 'Materiais')
     register_invite_link = os.getenv('REGISTER_INVITE_LINK', '1')
+    
+    # Additional Zimatise configurations
+    max_path = int(os.getenv('MAX_PATH', '260'))
+    create_new_channel = os.getenv('CREATE_NEW_CHANNEL', '1')
+    chat_id = os.getenv('CHAT_ID', '-100111111111')
+    moc_chat_id = os.getenv('MOC_CHAT_ID', '-10022222222')
+    autodel_video_temp = os.getenv('AUTODEL_VIDEO_TEMP', '1')
+    channel_adms = os.getenv('CHANNEL_ADMS', '')
+    time_limit = os.getenv('TIME_LIMIT', '99')
+    send_moc = os.getenv('SEND_MOC', '0')
+    move_to_uploaded = os.getenv('MOVE_TO_UPLOADED', '1')
     
     # Validate required variables
     if not telegram_api_id:
@@ -133,7 +161,20 @@ def load_config() -> Config:
         path_summary_bot=path_summary_bot,
         document_hashtag=document_hashtag,
         document_title=document_title,
-        register_invite_link=register_invite_link
+        register_invite_link=register_invite_link,
+        max_path=max_path,
+        create_new_channel=create_new_channel,
+        chat_id=chat_id,
+        moc_chat_id=moc_chat_id,
+        autodel_video_temp=autodel_video_temp,
+        channel_adms=channel_adms,
+        time_limit=time_limit,
+        send_moc=send_moc,
+        move_to_uploaded=move_to_uploaded,
+        channel_title_prefix=os.getenv('CHANNEL_TITLE_PREFIX', 'Academy'),
+        channel_size_label=os.getenv('CHANNEL_SIZE_LABEL', 'Tamanho'),
+        channel_duration_label=os.getenv('CHANNEL_DURATION_LABEL', 'Duração'),
+        channel_invite_label=os.getenv('CHANNEL_INVITE_LABEL', 'Convite')
     )
     
     log_operation_success(logger, "load_config")

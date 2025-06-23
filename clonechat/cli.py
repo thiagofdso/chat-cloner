@@ -671,7 +671,24 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
         if restart and existing_task:
             logger.info(f"🔄 Modo restart: apagando tarefa existente para {absolute_folder_path}")
             delete_publish_task(absolute_folder_path)
+            
+            # Limpar arquivos gerados pelo pipeline
+            project_workspace_path = Path("data/project_workspace") / project_name
+            if project_workspace_path.exists():
+                logger.info(f"🗑️ Limpando arquivos gerados em: {project_workspace_path}")
+                import shutil
+                try:
+                    shutil.rmtree(project_workspace_path)
+                    logger.info("✅ Arquivos gerados removidos com sucesso")
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao limpar arquivos: {e}")
+            
             existing_task = None
+        else:
+            logger.info("📋 Criando nova tarefa de publicação")
+            # Criar nova tarefa
+            task_data = create_publish_task(absolute_folder_path, project_name)
+            logger.info(f"✅ Nova tarefa criada: {task_data}")
         
         if existing_task:
             logger.info(f"📋 Tarefa de publicação existente encontrada:")

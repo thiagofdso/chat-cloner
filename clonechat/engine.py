@@ -11,7 +11,7 @@ from pyrogram.errors import ChatForwardsRestricted, FloodWait, ChannelInvalid, P
 
 from .config import Config
 from .database import init_db, get_task, create_task, update_strategy, update_progress
-from .processor import forward_message, download_process_upload
+from .processor import forward_message, download_process_upload, pin_corresponding_messages
 from .logging_config import (
     get_logger,
     log_operation_start,
@@ -191,6 +191,9 @@ class ClonerEngine:
         self.topic_id = topic_id
         self.logger = get_logger(__name__)
         
+        # Message ID mapping for pinned messages functionality
+        self.message_mapping: dict[int, int] = {}
+        
         # Log configuration
         log_configuration(
             logger,
@@ -277,7 +280,7 @@ class ClonerEngine:
                 raise ValueError(f"Cannot access destination chat {dest_chat_id}: {e}")
         else:
             # Create new destination channel
-            dest_chat_id = await self.create_destination_channel(origin_title)
+            dest_chat_id = await self.create_destination_channel(origin_title, origin_chat_id)
         
         # Create task in database
         create_task(origin_chat_id, origin_title, dest_chat_id)
@@ -352,35 +355,42 @@ class ClonerEngine:
             log_strategy_detection(logger, "download_upload", origin_chat_id)
             return "download_upload"
     
-    async def create_destination_channel(self, origin_title: str) -> int:
+    async def create_destination_channel(self, origin_title: str, origin_chat_id: int) -> int:
         """
-        Create a destination channel with [CLONE] prefix.
+        Create a destination channel with the same title and description as origin.
         
         Args:
             origin_title: The title of the origin channel.
+            origin_chat_id: The origin chat ID to get description from.
             
         Returns:
             The ID of the created destination channel.
         """
-        log_operation_start(logger, "create_destination_channel", origin_title=origin_title)
+        log_operation_start(logger, "create_destination_channel", origin_title=origin_title, origin_chat_id=origin_chat_id)
         
         dest_title = origin_title
         
         try:
-            # Create the channel
+            # Get origin channel info to copy description
+            origin_chat = await self.client.get_chat(origin_chat_id)
+            origin_description = origin_chat.description or ""
+            
+            logger.info(f"📝 Copying description from origin channel: {origin_description[:100]}...")
+            
+            # Create the channel with copied description
             dest_chat = await self.client.create_channel(
                 title=dest_title,
-                description=origin_title
+                description=origin_description
             )
             
             dest_chat_id = dest_chat.id
             log_channel_creation(logger, dest_chat_id, dest_title)
-            log_operation_success(logger, "create_destination_channel", channel_id=dest_chat_id, channel_title=dest_title)
+            log_operation_success(logger, "create_destination_channel", channel_id=dest_chat_id, channel_title=dest_title, description_copied=True)
             
             return dest_chat_id
             
         except Exception as e:
-            log_operation_error(logger, "create_destination_channel", e, origin_title=origin_title)
+            log_operation_error(logger, "create_destination_channel", e, origin_title=origin_title, origin_chat_id=origin_chat_id)
             raise
     
     async def sync_chat(self, origin_chat_id: int, restart: bool = False) -> None:
@@ -408,6 +418,8 @@ class ClonerEngine:
         download_path.mkdir(parents=True, exist_ok=True)
 
         logger.info(f"🚀 Starting sync: origin={origin_chat_id}, dest={dest_chat_id}, strategy={strategy}")
+        logger.info(f"📌 Pinned messages functionality: ENABLED (will pin corresponding messages after clone)")
+        logger.info(f"📝 Channel description copying: ENABLED (will copy description from origin channel)")
         
         try:
             # Get the last message ID to determine sync range
@@ -452,10 +464,16 @@ class ClonerEngine:
                         continue
                     
                     # Process message based on strategy using processor functions
+                    sent_message_id = None
                     if strategy == "forward":
-                        await self._forward_message(message, dest_chat_id)
+                        sent_message_id = await self._forward_message(message, dest_chat_id)
                     else:  # download_upload
-                        await self._download_upload_message(message, dest_chat_id, download_path)
+                        sent_message_id = await self._download_upload_message(message, dest_chat_id, download_path)
+                    
+                    # Track message mapping for pinned messages functionality
+                    if sent_message_id and sent_message_id > 0:
+                        self.message_mapping[message_id] = sent_message_id
+                        logger.debug(f"📝 Mapped message {message_id} -> {sent_message_id}")
                     
                     # Update progress only if processing was successful
                     update_progress(origin_chat_id, message_id)
@@ -492,7 +510,7 @@ class ClonerEngine:
     
     async def _post_cloning_actions(self, origin_chat_id: int, origin_title: str, dest_chat_id: int) -> None:
         """
-        Perform post-cloning actions: save channel link, publish link, and optionally leave origin channel.
+        Perform post-cloning actions: save channel link, publish link, pin corresponding messages, and optionally leave origin channel.
         
         Args:
             origin_chat_id: The origin chat ID.
@@ -509,6 +527,18 @@ class ClonerEngine:
             if self.publish_chat_id:
                 await publish_channel_link(self.client, origin_title, dest_chat_id, self.publish_chat_id, self.topic_id)
             
+            # Pin corresponding messages if we have a message mapping
+            if self.message_mapping:
+                logger.info(f"📌 Starting to pin corresponding messages (mapping: {len(self.message_mapping)} messages)")
+                await pin_corresponding_messages(
+                    client=self.client,
+                    origin_chat_id=origin_chat_id,
+                    dest_chat_id=dest_chat_id,
+                    message_mapping=self.message_mapping
+                )
+            else:
+                logger.info("📌 No message mapping available, skipping pinned messages")
+            
             # Leave the origin channel only if leave_origin is enabled
             if self.leave_origin:
                 await leave_origin_channel(self.client, origin_chat_id, origin_title)
@@ -522,26 +552,33 @@ class ClonerEngine:
             log_operation_error(logger, "post_cloning_actions", e, origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
             logger.warning(f"⚠️ Some post-cloning actions failed: {e}")
     
-    async def _forward_message(self, message, dest_chat_id: int) -> None:
+    async def _forward_message(self, message, dest_chat_id: int) -> int:
         """
         Forward a message using the forward strategy from processor.
         
         Args:
             message: The message to forward.
             dest_chat_id: Destination chat ID.
+            
+        Returns:
+            The ID of the sent message.
         """
         try:
-            await forward_message(
+            # Forward the message and get the sent message ID
+            sent_message_id = await forward_message(
                 client=self.client,
                 message=message,
                 destination_chat=dest_chat_id,
                 delay_seconds=self.config.cloner_delay_seconds
             )
+            
+            return sent_message_id
+            
         except Exception as e:
             log_operation_error(logger, "_forward_message", e, message_id=message.id, dest_chat_id=dest_chat_id)
             raise
     
-    async def _download_upload_message(self, message, dest_chat_id: int, download_path: Path) -> None:
+    async def _download_upload_message(self, message, dest_chat_id: int, download_path: Path) -> int:
         """
         Download and upload a message using the download_upload strategy from processor.
         
@@ -549,15 +586,21 @@ class ClonerEngine:
             message: The message to process.
             dest_chat_id: Destination chat ID.
             download_path: The specific directory to download files to for this task.
+            
+        Returns:
+            The ID of the sent message.
         """
         try:
-            await download_process_upload(
+            sent_message_id = await download_process_upload(
                 client=self.client,
                 message=message,
                 destination_chat=dest_chat_id,
                 download_path=download_path,
                 delay_seconds=self.config.cloner_delay_seconds
             )
+            
+            return sent_message_id
+            
         except Exception as e:
             log_operation_error(logger, "_download_upload_message", e, message_id=message.id, dest_chat_id=dest_chat_id)
             raise 

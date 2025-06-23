@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 from datetime import datetime
 import csv
+import shutil
 
 from pyrogram import Client
 import zipind
@@ -138,10 +139,10 @@ class PublishPipeline:
                 logger.info("⏭️ Pulando etapa 5: Timestamps já adicionados")
             
             # Step 6: Upload files
-            if not self.task.get('is_uploaded', False):
+            if not self.task.get('is_published', False):
                 logger.info("📤 Executando etapa 6: Upload para Telegram")
                 if await self._step_upload():
-                    await self._update_step_status('is_uploaded', True)
+                    await self._update_step_status('is_published', True)
                 else:
                     logger.error("❌ Falha na etapa de upload")
                     return False
@@ -228,9 +229,9 @@ class PublishPipeline:
             
             # Generate report using vidtool
             vidtool.step_create_report_filled(
-                folder_path_project=str(self.source_folder),
-                file_path_report=str(report_file),
-                list_video_extensions=video_extensions,
+                path_folder=self.source_folder,
+                file_path_report=report_file,
+                video_extensions=video_extensions,
                 reencode_plan=reencode_plan,
             )
             
@@ -312,6 +313,7 @@ class PublishPipeline:
             videos_splitted_path = self.project_process_path / "videos_splitted"
             videos_joined_path = self.project_output_path
             videos_cache_path = self.project_process_path / "cache"
+            videos_encoded_path = self.project_process_path / "videos_encoded"
             
             # Ensure directories exist
             videos_splitted_path.mkdir(parents=True, exist_ok=True)
@@ -360,6 +362,19 @@ class PublishPipeline:
                     activate_transition,
                 )
                 logger.info("✅ Vídeos juntados")
+            else:
+                # Modo single: copiar vídeos finais para output_videos
+                logger.info("📋 Modo single: copiando vídeos finais para output_videos")
+                # Preferir vídeos recodificados, senão originais
+                encoded_videos = list(videos_encoded_path.glob("*.mp4"))
+                if encoded_videos:
+                    for video in encoded_videos:
+                        shutil.copy2(video, videos_joined_path / video.name)
+                else:
+                    # Se não houver recodificados, copiar originais
+                    for video in self.source_folder.glob("*.mp4"):
+                        shutil.copy2(video, videos_joined_path / video.name)
+                logger.info("✅ Vídeos copiados para output_videos")
             
             logger.info(f"✅ Junção de arquivos concluída com sucesso")
             logger.info(f"📁 Arquivos finais salvos em: {videos_joined_path}")
@@ -406,18 +421,96 @@ class PublishPipeline:
             # Update progress
             await self._update_progress("timestamping", "Gerando timestamps e descrições")
             
-            # For now, we'll create a simple summary file
-            # In the future, this should use the timestamp_link_maker module
+            # Create summary file
             summary_file = self.project_process_path / "summary.txt"
             descriptions_file = self.project_process_path / "descriptions.xlsx"
+            upload_plan_file = self.project_process_path / "upload_plan.csv"
             
-            # Create a simple summary
+            # Create upload plan including both ZIP files (first) and videos (second)
+            files_to_upload = []
+            
+            # Add ZIP files (documents) FIRST with enumerated tags
+            zip_files = list(self.project_output_path.glob("*.zip*"))
+            if zip_files:
+                logger.info(f"📋 Encontrados {len(zip_files)} arquivos ZIP para upload")
+                for i, zip_file in enumerate(zip_files, start=1):
+                    # Create enumerated document tag using config prefix with #
+                    doc_tag = f"#{document_hashtag}{i:03d}"
+                    files_to_upload.append({
+                        'file_output': str(zip_file),
+                        'description': doc_tag,
+                        'type': 'document',
+                        'order': i  # ZIP files come first
+                    })
+            
+            # Add output videos SECOND
+            output_videos = list(self.project_output_path.glob("*.mp4"))
+            if output_videos:
+                logger.info(f"📋 Encontrados {len(output_videos)} vídeos para upload")
+                for i, video_file in enumerate(output_videos, start=start_index):
+                    # Caption: hashtag do índice (3 dígitos) + nome do vídeo (com extensão)
+                    if hashtag_index and hashtag_index.strip() and hashtag_index.lower() != "false":
+                        description = f"#{hashtag_index}{i:03d} {video_file.name}"
+                    else:
+                        description = f"#{i:03d} {video_file.name}"
+                    files_to_upload.append({
+                        'file_output': str(video_file),
+                        'description': description,
+                        'type': 'video',
+                        'order': len(zip_files) + i  # Videos come after ZIPs
+                    })
+            
+            # Write upload plan (ZIPs first, then videos)
+            if files_to_upload:
+                logger.info(f"📋 Criando plano de upload com {len(files_to_upload)} arquivos")
+                
+                with open(upload_plan_file, 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(['file_output', 'description'])
+                    
+                    # Sort by order to ensure ZIPs come first
+                    files_to_upload.sort(key=lambda x: x['order'])
+                    
+                    for file_info in files_to_upload:
+                        writer.writerow([file_info['file_output'], file_info['description']])
+                
+                logger.info(f"✅ Plano de upload criado: {upload_plan_file}")
+            else:
+                logger.warning("⚠️ Nenhum arquivo encontrado para upload")
+            
+            # Create summary with folder structure and video links
+            summary_content = "⚠️ Clique aqui para ver o sumário! ⚠️\n\n"
+            summary_content += "Siga o contéudo do mapa:\n\n\n"
+            
+            # Add documents section
+            if zip_files:
+                summary_content += f"{document_title}\n"
+                for i, zip_file in enumerate(zip_files, start=1):
+                    summary_content += f"#{document_hashtag}{i:03d}\n"
+                summary_content += "\n"
+            
+            # Add video structure with folder hierarchy
+            if output_videos:
+                # Get folder structure from source folder
+                source_path = Path(self.source_folder)
+                folder_name = source_path.name
+                
+                summary_content += f"= {folder_name}\n"
+                summary_content += "== 1.Introducao\n"
+                
+                # Add video hashtags
+                video_hashtags = []
+                for i, video_file in enumerate(output_videos, start=start_index):
+                    if hashtag_index and hashtag_index.strip() and hashtag_index.lower() != "false":
+                        # Use the hashtag_index value from config (e.g., "F", "Block")
+                        video_hashtags.append(f"#{hashtag_index}{i:03d}")
+                    else:
+                        video_hashtags.append(f"#{i:03d}")
+                
+                summary_content += " ".join(video_hashtags) + "\n"
+            
             with open(summary_file, 'w', encoding='utf-8') as f:
-                f.write(f"# {document_title}\n\n")
-                f.write(f"Projeto: {self.project_name}\n")
-                f.write(f"Pasta de origem: {self.source_folder}\n")
-                f.write(f"Data de processamento: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-                f.write(f"{document_hashtag}\n")
+                f.write(summary_content)
             
             # Create a simple descriptions file (placeholder)
             # In the future, this should use vidtool to create proper descriptions
@@ -428,6 +521,8 @@ class PublishPipeline:
             logger.info(f"✅ Timestamps e descrições gerados com sucesso")
             logger.info(f"📄 Arquivo de sumário: {summary_file}")
             logger.info(f"📋 Arquivo de descrições: {descriptions_file}")
+            if files_to_upload:
+                logger.info(f"📋 Plano de upload: {upload_plan_file}")
             
             return True
             
@@ -613,17 +708,61 @@ class PublishPipeline:
             # Create new destination channel
             logger.info("🆕 Creating new destination channel for publishing")
             
-            # Create channel title based on project name
-            channel_title = f"{self.project_name} - Publicação"
+            # Create channel title based on project name (replace underscores with spaces)
+            channel_title = self.project_name.replace('_', ' ')
             
-            # Create the channel
+            # Calculate channel description with metadata
+            total_size = self._calculate_total_size()
+            total_duration = self._calculate_total_duration()
+            
+            # Get channel description configuration
+            size_label = self.config.channel_size_label
+            duration_label = self.config.channel_duration_label
+            invite_label = self.config.channel_invite_label
+            
+            # Create the channel with empty description first
             dest_chat = await self.client.create_channel(
                 title=channel_title,
-                description=f"Publicação automática do projeto: {self.project_name}"
+                description=""
             )
             
             dest_chat_id = dest_chat.id
             logger.info(f"✅ Destination channel created: {channel_title} (ID: {dest_chat_id})")
+            
+            # Get invite link
+            invite_link = await self._get_channel_invite_link(dest_chat_id)
+            
+            # Create full description with title and metadata
+            full_description = f"{channel_title}\n{size_label}: {total_size}\n{duration_label}: {total_duration}\n{invite_label}: {invite_link}"
+            
+            try:
+                # Update the description using set_chat_description
+                logger.info(f"🔄 Attempting to update channel description for channel ID: {dest_chat_id}")
+                logger.info(f"📝 Description content: {full_description}")
+                
+                # Update the description using the simpler method
+                await self.client.set_chat_description(
+                    chat_id=dest_chat_id,
+                    description=full_description
+                )
+                
+                logger.info("✅ Channel description updated successfully")
+                
+                # Verify the update by getting the channel info
+                try:
+                    updated_chat = await self.client.get_chat(dest_chat_id)
+                    if updated_chat.description:
+                        logger.info(f"✅ Description verified: {updated_chat.description[:100]}...")
+                    else:
+                        logger.warning("⚠️ Description appears to be empty after update")
+                except Exception as verify_error:
+                    logger.warning(f"⚠️ Could not verify description update: {verify_error}")
+                
+            except Exception as e:
+                logger.error(f"❌ Could not update channel description: {e}")
+                logger.error(f"❌ Error type: {type(e).__name__}")
+                logger.error(f"❌ Error details: {str(e)}")
+                logger.info(f"📋 Manual update needed. Description: {full_description}")
             
             # Save the destination channel ID to the database
             set_publish_destination_chat(self.task['source_folder_path'], dest_chat_id)
@@ -810,6 +949,109 @@ class PublishPipeline:
         except Exception as e:
             logger.error(f"❌ Failed to upload and pin summary: {e}")
             return False
+    
+    def _calculate_total_size(self) -> str:
+        """
+        Calculate total size of all files to be uploaded.
+        
+        Returns:
+            str: Total size in human readable format (e.g., "109.3 GB")
+        """
+        try:
+            total_size = 0
+            
+            # Calculate size of ZIP files
+            zip_files = list(self.project_output_path.glob("*.zip*"))
+            for zip_file in zip_files:
+                total_size += zip_file.stat().st_size
+            
+            # Calculate size of video files
+            video_files = list(self.project_output_path.glob("*.mp4"))
+            for video_file in video_files:
+                total_size += video_file.stat().st_size
+            
+            # Convert to human readable format
+            if total_size >= 1024**3:  # GB
+                return f"{total_size / (1024**3):.1f} GB"
+            elif total_size >= 1024**2:  # MB
+                return f"{total_size / (1024**2):.1f} MB"
+            elif total_size >= 1024:  # KB
+                return f"{total_size / 1024:.1f} KB"
+            else:
+                return f"{total_size} B"
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Error calculating total size: {e}")
+            return "Unknown"
+    
+    def _calculate_total_duration(self) -> str:
+        """
+        Calculate total duration of all video files.
+        
+        Returns:
+            str: Total duration in human readable format (e.g., "447h 47min")
+        """
+        try:
+            import subprocess
+            total_seconds = 0
+            
+            # Get duration of all video files
+            video_files = list(self.project_output_path.glob("*.mp4"))
+            for video_file in video_files:
+                try:
+                    # Use ffprobe to get duration
+                    result = subprocess.run([
+                        'ffprobe', '-v', 'quiet', '-show_entries', 
+                        'format=duration', '-of', 'csv=p=0', str(video_file)
+                    ], capture_output=True, text=True, timeout=10)
+                    
+                    if result.returncode == 0:
+                        duration = float(result.stdout.strip())
+                        total_seconds += duration
+                except Exception as e:
+                    logger.warning(f"⚠️ Error getting duration for {video_file.name}: {e}")
+                    continue
+            
+            # Convert to hours and minutes
+            if total_seconds > 0:
+                hours = int(total_seconds // 3600)
+                minutes = int((total_seconds % 3600) // 60)
+                return f"{hours}h {minutes}min"
+            else:
+                return "0h 0min"
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Error calculating total duration: {e}")
+            return "Unknown"
+    
+    async def _get_channel_invite_link(self, chat_id: int) -> str:
+        """
+        Get or create invite link for the channel.
+        
+        Args:
+            chat_id: Channel ID.
+            
+        Returns:
+            str: Invite link.
+        """
+        try:
+            logger.info(f"🔗 Generating invite link for channel ID: {chat_id}")
+            
+            # Generate the invite link using Pyrogram
+            try:
+                invite_link = await self.client.export_chat_invite_link(chat_id)
+                logger.info(f"🔗 Generated invite link: {invite_link}")
+                return invite_link
+            except Exception as e:
+                logger.warning(f"⚠️ Could not generate invite link, using direct link: {e}")
+                # Fallback to direct link if invite link generation fails
+                invite_link = f"https://t.me/c/{str(chat_id)[4:]}/1"
+                logger.info(f"🔗 Using fallback direct link: {invite_link}")
+                return invite_link
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to get invite link for channel {chat_id}: {e}")
+            return "Link não disponível"
     
     # Placeholder methods for future phases
     # Note: These methods are now implemented above 

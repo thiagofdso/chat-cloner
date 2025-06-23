@@ -83,201 +83,249 @@ def get_sender(message: Message) -> Callable:
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_photo(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_photo(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a photo message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the photo.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "photo")
     caption = get_caption(message)
     photo_id = message.photo.file_id
     
-    await client.send_photo(
+    sent_message = await client.send_photo(
         chat_id=destination_chat,
         photo=photo_id,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_text(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_text(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a text message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the text.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "text")
     text = message.text.markdown
     
-    await client.send_message(
+    sent_message = await client.send_message(
         chat_id=destination_chat,
         text=text,
         disable_notification=True,
         disable_web_page_preview=True,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_sticker(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_sticker(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a sticker message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the sticker.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "sticker")
     sticker_id = message.sticker.file_id
     
-    await client.send_sticker(
+    sent_message = await client.send_sticker(
         chat_id=destination_chat, 
         sticker=sticker_id
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_document(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_document(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a document message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the document.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "document")
     caption = get_caption(message)
     document_id = message.document.file_id
     
-    await client.send_document(
+    sent_message = await client.send_document(
         chat_id=destination_chat,
         document=document_id,
         disable_notification=True,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_animation(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_animation(client: Client, message: Message, destination_chat: int) -> int:
     """Forward an animation message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the animation.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "animation")
     caption = get_caption(message)
     animation_id = message.animation.file_id
     
-    await client.send_animation(
+    sent_message = await client.send_animation(
         chat_id=destination_chat,
         animation=animation_id,
         disable_notification=True,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_audio(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_audio(client: Client, message: Message, destination_chat: int) -> int:
     """Forward an audio message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the audio.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "audio")
     caption = get_caption(message)
     audio_id = message.audio.file_id
     
-    await client.send_audio(
+    sent_message = await client.send_audio(
         chat_id=destination_chat,
         audio=audio_id,
         disable_notification=True,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_voice(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_voice(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a voice message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the voice.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "voice")
     caption = get_caption(message)
     voice_id = message.voice.file_id
     
-    await client.send_voice(
+    sent_message = await client.send_voice(
         chat_id=destination_chat,
         voice=voice_id,
         disable_notification=True,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_video_note(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_video_note(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a video note message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the video note.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "video_note")
     video_note_id = message.video_note.file_id
     
-    await client.send_video_note(
+    sent_message = await client.send_video_note(
         chat_id=destination_chat,
         video_note=video_note_id,
         disable_notification=True,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_video(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_video(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a video message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the video.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "video")
     caption = get_caption(message)
     video_id = message.video.file_id
     
-    await client.send_video(
+    sent_message = await client.send_video(
         chat_id=destination_chat,
         video=video_id,
         disable_notification=True,
         caption=caption,
     )
+    
+    return sent_message.id
 
 
 @retry_telegram_operation(max_retries=3, base_delay=2.0)
-async def forward_poll(client: Client, message: Message, destination_chat: int) -> None:
+async def forward_poll(client: Client, message: Message, destination_chat: int) -> int:
     """Forward a poll message.
     
     Args:
         client: The Pyrogram client.
         message: The message containing the poll.
         destination_chat: The destination chat ID.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_media_operation(logger, "Forwarding", message.id, "poll")
     if message.poll.type != "regular":
-        return
+        raise ValueError("Only regular polls can be forwarded")
     
-    await client.send_poll(
+    sent_message = await client.send_poll(
         chat_id=destination_chat,
         question=message.poll.question,
         options=[option.text for option in message.poll.options],
@@ -285,6 +333,8 @@ async def forward_poll(client: Client, message: Message, destination_chat: int) 
         allows_multiple_answers=message.poll.allows_multiple_answers,
         disable_notification=True,
     )
+    
+    return sent_message.id
 
 
 async def forward_message(
@@ -292,7 +342,7 @@ async def forward_message(
     message: Message, 
     destination_chat: int, 
     delay_seconds: float = 2.0
-) -> None:
+) -> int:
     """Forward a message using the direct forward strategy.
     
     This function determines the message type and forwards it directly
@@ -303,6 +353,9 @@ async def forward_message(
         message: The message to forward.
         destination_chat: The destination chat ID.
         delay_seconds: Delay in seconds between operations to avoid FloodWait.
+        
+    Returns:
+        The ID of the sent message.
     """
     try:
         log_operation_start(logger, "forward_message", message_id=message.id, destination_chat=destination_chat)
@@ -310,14 +363,16 @@ async def forward_message(
         # Get the appropriate forward function based on message type
         forward_func = get_sender(message)
         
-        # Forward the message
-        await forward_func(client, message, destination_chat)
+        # Forward the message and get the sent message ID
+        sent_message_id = await forward_func(client, message, destination_chat)
         
-        log_operation_success(logger, "forward_message", message_id=message.id, destination_chat=destination_chat)
+        log_operation_success(logger, "forward_message", message_id=message.id, destination_chat=destination_chat, sent_message_id=sent_message_id)
         
         # Apply delay to avoid FloodWait
         if delay_seconds > 0:
             await asyncio.sleep(delay_seconds)
+            
+        return sent_message_id
             
     except ChatForwardsRestricted:
         log_operation_error(logger, "forward_message", ChatForwardsRestricted("Forwarding is not allowed"), 
@@ -456,7 +511,7 @@ async def upload_media(
     destination_chat: int,
     caption: Optional[str] = None,
     message_type: str = "document"
-) -> None:
+) -> int:
     """Upload media to a destination chat.
     
     Args:
@@ -465,50 +520,55 @@ async def upload_media(
         destination_chat: The destination chat ID.
         caption: Optional caption for the media.
         message_type: Type of media (video, document, photo, audio, voice).
+        
+    Returns:
+        The ID of the sent message.
     """
     try:
         log_operation_start(logger, "upload_media", file_path=file_path.name, message_type=message_type, destination_chat=destination_chat)
         
+        sent_message = None
         if message_type == "video":
-            await client.send_video(
+            sent_message = await client.send_video(
                 chat_id=destination_chat,
                 video=str(file_path),
                 caption=caption,
                 supports_streaming=True,
             )
         elif message_type == "document":
-            await client.send_document(
+            sent_message = await client.send_document(
                 chat_id=destination_chat,
                 document=str(file_path),
                 caption=caption,
             )
         elif message_type == "photo":
-            await client.send_photo(
+            sent_message = await client.send_photo(
                 chat_id=destination_chat,
                 photo=str(file_path),
                 caption=caption,
             )
         elif message_type == "audio":
-            await client.send_audio(
+            sent_message = await client.send_audio(
                 chat_id=destination_chat,
                 audio=str(file_path),
                 caption=caption,
             )
         elif message_type == "voice":
-            await client.send_voice(
+            sent_message = await client.send_voice(
                 chat_id=destination_chat,
                 voice=str(file_path),
                 caption=caption,
             )
         else:
             # Default to document
-            await client.send_document(
+            sent_message = await client.send_document(
                 chat_id=destination_chat,
                 document=str(file_path),
                 caption=caption,
             )
         
         log_operation_success(logger, "upload_media", file_path=file_path.name, message_type=message_type)
+        return sent_message.id
         
     except Exception as e:
         log_operation_error(logger, "upload_media", e, file_path=file_path.name, message_type=message_type)
@@ -578,30 +638,119 @@ async def _extract_audio(message: Message, file_path: Path) -> None:
 
 async def _upload_media(
     client: Client, chat_id: int, file_path: Path, caption: str
-) -> None:
+) -> int:
     """
     Uploads a media file to the specified chat, selecting the correct
     Pyrogram method based on the file type.
+    
+    Args:
+        client: The Pyrogram client.
+        chat_id: The destination chat ID.
+        file_path: Path to the file to upload.
+        caption: Caption for the media.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_operation_start(
         logger, "upload_media", file_path=str(file_path), chat_id=chat_id
     )
     
     try:
+        sent_message = None
         if file_path.suffix.lower() in [".jpg", ".jpeg", ".png"]:
-            await client.send_photo(chat_id, photo=str(file_path), caption=caption)
+            sent_message = await client.send_photo(chat_id, photo=str(file_path), caption=caption)
         elif file_path.suffix.lower() in [".mp4", ".mkv", ".avi", ".mov"]:
-            await client.send_video(chat_id, video=str(file_path), caption=caption)
+            sent_message = await client.send_video(chat_id, video=str(file_path), caption=caption)
         elif file_path.suffix.lower() in [".mp3", ".ogg", ".wav", ".flac"]:
-            await client.send_audio(chat_id, audio=str(file_path), caption=caption)
+            sent_message = await client.send_audio(chat_id, audio=str(file_path), caption=caption)
         else:
-            await client.send_document(chat_id, document=str(file_path), caption=caption)
+            sent_message = await client.send_document(chat_id, document=str(file_path), caption=caption)
         
         logger.info(f"✅ Uploaded {file_path.name} to {chat_id}")
+        return sent_message.id
     
     except Exception as e:
         log_operation_error(logger, "upload_media", e, file_path=str(file_path))
         raise # Re-raise to be handled by the main processor
+
+
+@retry_telegram_operation(max_retries=3, base_delay=2.0)
+async def get_pinned_messages(client: Client, chat_id: int) -> list[Message]:
+    """
+    Get pinned message from a chat.
+    
+    Args:
+        client: The Pyrogram client.
+        chat_id: The chat ID to get pinned message from.
+        
+    Returns:
+        List containing the pinned message, or empty list if no pinned message.
+    """
+    try:
+        log_operation_start(logger, "get_pinned_messages", chat_id=chat_id)
+        
+        # Get chat info and check for pinned message
+        chat = await client.get_chat(chat_id)
+        if chat.pinned_message:
+            logger.info(f"📌 Found pinned message: {chat.pinned_message.id}")
+            log_operation_success(logger, "get_pinned_messages", chat_id=chat_id, pinned_count=1)
+            return [chat.pinned_message]
+        else:
+            logger.info(f"📌 No pinned message found in chat {chat_id}")
+            log_operation_success(logger, "get_pinned_messages", chat_id=chat_id, pinned_count=0)
+            return []
+        
+    except Exception as e:
+        log_operation_error(logger, "get_pinned_messages", e, chat_id=chat_id)
+        logger.error(f"❌ Error getting pinned message: {e}")
+        return []
+
+
+@retry_telegram_operation(max_retries=3, base_delay=2.0)
+async def pin_corresponding_messages(
+    client: Client, 
+    origin_chat_id: int, 
+    dest_chat_id: int, 
+    message_mapping: dict[int, int]
+) -> None:
+    """
+    Pin messages in destination chat that correspond to pinned messages in origin.
+    
+    Args:
+        client: The Pyrogram client.
+        origin_chat_id: The origin chat ID.
+        dest_chat_id: The destination chat ID.
+        message_mapping: Mapping of origin message IDs to destination message IDs.
+    """
+    try:
+        log_operation_start(logger, "pin_corresponding_messages", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
+        
+        # Get pinned messages from origin
+        pinned_messages = await get_pinned_messages(client, origin_chat_id)
+        
+        if not pinned_messages:
+            logger.info("📌 No pinned messages found in origin channel")
+            log_operation_success(logger, "pin_corresponding_messages", origin_chat_id=origin_chat_id, pinned_count=0)
+            return
+            
+        pinned_count = 0
+        # Pin corresponding messages in destination
+        for pinned_msg in pinned_messages:
+            if pinned_msg.id in message_mapping:
+                dest_msg_id = message_mapping[pinned_msg.id]
+                await client.pin_chat_message(dest_chat_id, dest_msg_id)
+                logger.info(f"📌 Pinned message {dest_msg_id} (origin: {pinned_msg.id})")
+                pinned_count += 1
+            else:
+                logger.warning(f"⚠️ Pinned message {pinned_msg.id} not found in mapping")
+        
+        logger.info(f"✅ Successfully pinned {pinned_count}/{len(pinned_messages)} messages")
+        log_operation_success(logger, "pin_corresponding_messages", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id, pinned_count=pinned_count)
+                
+    except Exception as e:
+        log_operation_error(logger, "pin_corresponding_messages", e, origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
+        logger.error(f"❌ Error pinning messages: {e}")
 
 
 async def download_process_upload(
@@ -610,7 +759,7 @@ async def download_process_upload(
     destination_chat: int,
     download_path: Path,
     delay_seconds: int,
-) -> None:
+) -> int:
     """
     Processes a message, handling both text and media types.
     For media, downloads it, optionally extracts audio, and uploads the original media.
@@ -622,6 +771,9 @@ async def download_process_upload(
         destination_chat: The destination chat ID.
         download_path: The base directory for downloads for this task.
         delay_seconds: Delay after processing the message.
+        
+    Returns:
+        The ID of the sent message.
     """
     log_operation_start(
         logger,
@@ -631,11 +783,14 @@ async def download_process_upload(
     )
 
     try:
+        sent_message_id = 0  # Default value
+        
         if message.text:
             # Handle text-only messages
-            await client.send_message(
+            sent_message = await client.send_message(
                 chat_id=destination_chat, text=message.text
             )
+            sent_message_id = sent_message.id
             logger.info(f"✅ Sent text message {message.id} to {destination_chat}")
         
         elif message.media:
@@ -651,7 +806,7 @@ async def download_process_upload(
                     # Get the audio file path that was created
                     audio_path = downloaded_path.with_suffix(".mp3")
 
-                await _upload_media(
+                sent_message_id = await _upload_media(
                     client, destination_chat, downloaded_path, caption
                 )
                 
@@ -669,8 +824,11 @@ async def download_process_upload(
                  # pode ser um tipo não suportado ou um texto com formatação.
                  # Tentamos enviar o texto/caption, se houver.
                 if caption:
-                    await client.send_message(chat_id=destination_chat, text=caption)
+                    sent_message = await client.send_message(chat_id=destination_chat, text=caption)
+                    sent_message_id = sent_message.id
                     logger.info(f"✅ Sent caption for message {message.id} to {destination_chat}")
+
+        return sent_message_id
 
     except Exception as e:
         log_operation_error(
