@@ -26,6 +26,23 @@ class Config:
     telegram_api_hash: str
     cloner_delay_seconds: int
     cloner_download_path: str
+    
+    # Zimatise pipeline configuration
+    file_size_limit_mb: int = 50
+    mode: str = "split"
+    video_extensions: str = "mp4,avi,mkv,mov,wmv,flv,webm"
+    reencode_plan: str = "group"
+    duration_limit: str = "00:30:00"
+    activate_transition: str = "false"
+    start_index: int = 1
+    hashtag_index: str = "false"
+    descriptions_auto_adapt: str = "true"
+    silent_mode: str = "false"
+    path_summary_top: str = "summary_top.txt"
+    path_summary_bot: str = "summary_bot.txt"
+    document_hashtag: str = "#document"
+    document_title: str = "Document"
+    register_invite_link: str = "1"
 
 
 def load_config() -> Config:
@@ -51,6 +68,23 @@ def load_config() -> Config:
     # Get optional environment variables with defaults
     cloner_delay_seconds = int(os.getenv('CLONER_DELAY_SECONDS', '2'))
     cloner_download_path = os.getenv('CLONER_DOWNLOAD_PATH', './data/downloads/')
+    
+    # Zimatise pipeline configuration
+    file_size_limit_mb = int(os.getenv('FILE_SIZE_LIMIT_MB', '50'))
+    mode = os.getenv('MODE', 'split')
+    video_extensions = os.getenv('VIDEO_EXTENSIONS', 'mp4,avi,mkv,mov,wmv,flv,webm')
+    reencode_plan = os.getenv('REENCODE_PLAN', 'group')
+    duration_limit = os.getenv('DURATION_LIMIT', '00:30:00')
+    activate_transition = os.getenv('ACTIVATE_TRANSITION', 'false')
+    start_index = int(os.getenv('START_INDEX', '1'))
+    hashtag_index = os.getenv('HASHTAG_INDEX', 'false')
+    descriptions_auto_adapt = os.getenv('DESCRIPTIONS_AUTO_ADAPT', 'true')
+    silent_mode = os.getenv('SILENT_MODE', 'false')
+    path_summary_top = os.getenv('PATH_SUMMARY_TOP', 'summary_top.txt')
+    path_summary_bot = os.getenv('PATH_SUMMARY_BOT', 'summary_bot.txt')
+    document_hashtag = os.getenv('DOCUMENT_HASHTAG', '#document')
+    document_title = os.getenv('DOCUMENT_TITLE', 'Document')
+    register_invite_link = os.getenv('REGISTER_INVITE_LINK', '1')
     
     # Validate required variables
     if not telegram_api_id:
@@ -84,7 +118,22 @@ def load_config() -> Config:
         telegram_api_id=telegram_api_id,
         telegram_api_hash=telegram_api_hash,
         cloner_delay_seconds=cloner_delay_seconds,
-        cloner_download_path=cloner_download_path
+        cloner_download_path=cloner_download_path,
+        file_size_limit_mb=file_size_limit_mb,
+        mode=mode,
+        video_extensions=video_extensions,
+        reencode_plan=reencode_plan,
+        duration_limit=duration_limit,
+        activate_transition=activate_transition,
+        start_index=start_index,
+        hashtag_index=hashtag_index,
+        descriptions_auto_adapt=descriptions_auto_adapt,
+        silent_mode=silent_mode,
+        path_summary_top=path_summary_top,
+        path_summary_bot=path_summary_bot,
+        document_hashtag=document_hashtag,
+        document_title=document_title,
+        register_invite_link=register_invite_link
     )
     
     log_operation_success(logger, "load_config")

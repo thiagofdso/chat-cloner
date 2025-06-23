@@ -679,10 +679,26 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
             logger.info(f"   - Etapa atual: {existing_task['current_step']}")
             logger.info(f"   - Último arquivo: {existing_task['last_uploaded_file']}")
             logger.info(f"   - Chat de destino: {existing_task['destination_chat_id']}")
+            
+            # Usar tarefa existente
+            task_data = existing_task
         else:
-            logger.info("📋 Nenhuma tarefa de publicação encontrada")
+            logger.info("📋 Criando nova tarefa de publicação")
+            # Criar nova tarefa
+            task_data = create_publish_task(absolute_folder_path, project_name)
+            logger.info(f"✅ Nova tarefa criada: {task_data}")
         
-        logger.info("✅ Verificação de tarefa concluída - pipeline será implementado no Marco 2")
+        # Executar pipeline
+        logger.info("🚀 Iniciando pipeline de publicação")
+        pipeline = PublishPipeline(client, task_data)
+        
+        success = await pipeline.run()
+        
+        if success:
+            logger.info("✅ Pipeline de publicação concluído com sucesso!")
+        else:
+            logger.error("❌ Pipeline de publicação falhou")
+            raise typer.Exit(1)
         
     except Exception as e:
         logger.error(f"❌ Erro na operação de publicação: {e}")
