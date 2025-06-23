@@ -12,9 +12,10 @@ from pyrogram.raw.functions.channels import GetFullChannel, GetForumTopics
 
 from config import load_config, Config
 
-from database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress
+from database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress, get_publish_task, create_publish_task, delete_publish_task
 from engine import ClonerEngine
 from logging_config import setup_logging, get_logger, log_operation_start, log_operation_success, log_operation_error
+from clonechat.tasks import PublishPipeline
 
 # Setup logging
 setup_logging(log_level="INFO", enable_console=True, enable_file=True)
@@ -616,6 +617,106 @@ def download(
                 await client.stop()
     
     asyncio.run(download_videos())
+
+
+async def run_publish_async(folder_path: str, restart: bool = False) -> None:
+    """
+    Async wrapper for the publish operation.
+    
+    Args:
+        folder_path: Path to the folder to publish.
+        restart: Whether to restart the publish task (delete existing task).
+    """
+    try:
+        log_operation_start(logger, "run_publish_async", folder_path=folder_path, restart=restart)
+        
+        # Carregar configurações
+        config = load_config()
+        logger.info("⚙️ Configurações carregadas com sucesso")
+        
+        # Inicializar cliente Pyrogram
+        client = Client(
+            "clonechat_user",
+            api_id=config.telegram_api_id,
+            api_hash=config.telegram_api_hash
+        )
+        
+        # Iniciar cliente Pyrogram
+        await client.start()
+        me = await client.get_me()
+        logger.info(f"🤖 Logged in as: {me.first_name} (ID: {me.id})")
+        
+        # Inicializar banco de dados
+        init_db()
+        logger.info("💾 Banco de dados inicializado")
+        
+        # Verificar se a pasta existe
+        folder_path_obj = Path(folder_path)
+        if not folder_path_obj.exists():
+            raise ValueError(f"Pasta não encontrada: {folder_path}")
+        
+        if not folder_path_obj.is_dir():
+            raise ValueError(f"Caminho não é uma pasta: {folder_path}")
+        
+        # Resolver caminho absoluto
+        absolute_folder_path = str(folder_path_obj.resolve())
+        project_name = folder_path_obj.name
+        
+        logger.info(f"📁 Pasta de origem: {absolute_folder_path}")
+        logger.info(f"📋 Nome do projeto: {project_name}")
+        
+        # Verificar tarefa existente
+        existing_task = get_publish_task(absolute_folder_path)
+        
+        if restart and existing_task:
+            logger.info(f"🔄 Modo restart: apagando tarefa existente para {absolute_folder_path}")
+            delete_publish_task(absolute_folder_path)
+            existing_task = None
+        
+        if existing_task:
+            logger.info(f"📋 Tarefa de publicação existente encontrada:")
+            logger.info(f"   - Status: {existing_task['status']}")
+            logger.info(f"   - Etapa atual: {existing_task['current_step']}")
+            logger.info(f"   - Último arquivo: {existing_task['last_uploaded_file']}")
+            logger.info(f"   - Chat de destino: {existing_task['destination_chat_id']}")
+        else:
+            logger.info("📋 Nenhuma tarefa de publicação encontrada")
+        
+        logger.info("✅ Verificação de tarefa concluída - pipeline será implementado no Marco 2")
+        
+    except Exception as e:
+        logger.error(f"❌ Erro na operação de publicação: {e}")
+        raise typer.Exit(1)
+    finally:
+        if 'client' in locals():
+            await client.stop()
+
+
+@app.command()
+def publish(
+    folder_path: str = typer.Option(..., "--folder", "-f", help="Caminho para a pasta a ser publicada"),
+    restart: bool = typer.Option(False, "--restart", "-r", help="Forçar nova publicação do zero (apaga dados anteriores)")
+):
+    """
+    Publica uma pasta local no Telegram usando o pipeline Zimatise.
+    
+    O sistema processa a pasta através de várias etapas:
+    1. Compactação de arquivos
+    2. Geração de relatórios
+    3. Recodificação de vídeos
+    4. Junção de arquivos
+    5. Adição de timestamps
+    6. Upload para Telegram
+    
+    O sistema verifica automaticamente se já existe uma tarefa de publicação
+    para esta pasta e resume de onde parou. Use --restart para forçar
+    uma nova publicação do zero.
+    
+    Exemplos:
+    - python main.py publish --folder C:/meus_projetos/curso_python
+    - python main.py publish --folder C:/meus_projetos/curso_python --restart
+    """
+    asyncio.run(run_publish_async(folder_path, restart))
 
 
 @app.command()
