@@ -2,7 +2,7 @@
 Main entry point for Clonechat.
 """
 import sys
-from cli import app
+from clonechat.cli import app
 
 
 def main():

@@ -16,7 +16,7 @@ from pyrogram import Client
 from pyrogram.errors import ChatForwardsRestricted, FloodWait
 from pyrogram.types import Message
 
-from logging_config import (
+from .logging_config import (
     get_logger, 
     log_operation_start, 
     log_operation_success, 
@@ -26,7 +26,7 @@ from logging_config import (
     log_ffmpeg_operation,
     log_cleanup_operation
 )
-from retry_utils import retry_telegram_operation, retry_file_operation
+from .retry_utils import retry_telegram_operation, retry_file_operation
 
 logger = get_logger(__name__)
 

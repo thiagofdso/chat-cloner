@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from dotenv import load_dotenv
 
-from logging_config import (
+from .logging_config import (
     get_logger,
     log_configuration,
     log_operation_start,

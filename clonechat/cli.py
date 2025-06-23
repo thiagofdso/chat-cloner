@@ -10,12 +10,12 @@ import toml
 import sqlite3
 from pyrogram.raw.functions.channels import GetFullChannel, GetForumTopics
 
-from config import load_config, Config
+from .config import load_config, Config
 
-from database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress, get_publish_task, create_publish_task, delete_publish_task
-from engine import ClonerEngine
-from logging_config import setup_logging, get_logger, log_operation_start, log_operation_success, log_operation_error
-from clonechat.tasks import PublishPipeline
+from .database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress, get_publish_task, create_publish_task, delete_publish_task
+from .engine import ClonerEngine
+from .logging_config import setup_logging, get_logger, log_operation_start, log_operation_success, log_operation_error
+from .tasks import PublishPipeline
 
 # Setup logging
 setup_logging(log_level="INFO", enable_console=True, enable_file=True)

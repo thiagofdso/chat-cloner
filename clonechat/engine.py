@@ -9,10 +9,10 @@ from typing import Dict, Any, Optional
 from pyrogram import Client, enums
 from pyrogram.errors import ChatForwardsRestricted, FloodWait, ChannelInvalid, PeerIdInvalid
 
-from config import Config
-from database import init_db, get_task, create_task, update_strategy, update_progress
-from processor import forward_message, download_process_upload
-from logging_config import (
+from .config import Config
+from .database import init_db, get_task, create_task, update_strategy, update_progress
+from .processor import forward_message, download_process_upload
+from .logging_config import (
     get_logger,
     log_operation_start,
     log_operation_success,
@@ -66,12 +66,18 @@ async def publish_channel_link(client: Client, origin_title: str, dest_chat_id: 
     try:
         logger.info(f"📢 Publishing channel link for: {origin_title} (ID: {dest_chat_id})")
         
-        # Generate the channel link
-        channel_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
-        logger.info(f"🔗 Generated channel link: {channel_link}")
+        # Generate the invite link using Pyrogram
+        try:
+            invite_link = await client.export_chat_invite_link(dest_chat_id)
+            logger.info(f"🔗 Generated invite link: {invite_link}")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not generate invite link, using direct link: {e}")
+            # Fallback to direct link if invite link generation fails
+            invite_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
+            logger.info(f"🔗 Using fallback direct link: {invite_link}")
         
         # Create the message text
-        message_text = f"{origin_title}\n{channel_link}"
+        message_text = f"{origin_title}\n{invite_link}"
         
         # Prepare message parameters
         message_params = {
@@ -87,7 +93,7 @@ async def publish_channel_link(client: Client, origin_title: str, dest_chat_id: 
         # Send the message
         await client.send_message(**message_params)
         
-        logger.info(f"✅ Channel link published successfully: {origin_title} -> {channel_link}")
+        logger.info(f"✅ Channel link published successfully: {origin_title} -> {invite_link}")
         
     except Exception as e:
         logger.error(f"❌ Failed to publish channel link: {e}")
@@ -95,20 +101,27 @@ async def publish_channel_link(client: Client, origin_title: str, dest_chat_id: 
         raise
 
 
-def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
+async def save_channel_link(client: Client, origin_title: str, dest_chat_id: int) -> None:
     """
     Save the cloned channel link to links_canais.txt.
     
     Args:
+        client: The Pyrogram client.
         origin_title: The title of the origin channel.
         dest_chat_id: The destination channel ID.
     """
     try:
         logger.info(f"📝 Starting to save channel link for: {origin_title} (ID: {dest_chat_id})")
         
-        # Generate the channel link
-        channel_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
-        logger.info(f"🔗 Generated channel link: {channel_link}")
+        # Generate the invite link using Pyrogram
+        try:
+            invite_link = await client.export_chat_invite_link(dest_chat_id)
+            logger.info(f"🔗 Generated invite link: {invite_link}")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not generate invite link, using direct link: {e}")
+            # Fallback to direct link if invite link generation fails
+            invite_link = f"https://t.me/c/{str(dest_chat_id)[4:]}/1"
+            logger.info(f"🔗 Using fallback direct link: {invite_link}")
         
         # Create the links file if it doesn't exist
         links_file = Path("links_canais.txt")
@@ -117,10 +130,10 @@ def save_channel_link(origin_title: str, dest_chat_id: int) -> None:
         # Write the channel info
         with open(links_file, 'a', encoding='utf-8') as f:
             f.write(f"{origin_title}\n")
-            f.write(f"{channel_link}\n")
+            f.write(f"{invite_link}\n")
             f.write("-" * 50 + "\n")  # Separator
         
-        logger.info(f"✅ Channel link saved successfully: {origin_title} -> {channel_link}")
+        logger.info(f"✅ Channel link saved successfully: {origin_title} -> {invite_link}")
         
     except Exception as e:
         logger.error(f"❌ Failed to save channel link: {e}")
@@ -357,7 +370,7 @@ class ClonerEngine:
             # Create the channel
             dest_chat = await self.client.create_channel(
                 title=dest_title,
-                description=f"Cloned from {origin_title}"
+                description=origin_title
             )
             
             dest_chat_id = dest_chat.id
@@ -490,7 +503,7 @@ class ClonerEngine:
             log_operation_start(logger, "post_cloning_actions", origin_chat_id=origin_chat_id, dest_chat_id=dest_chat_id)
             
             # Save channel link to file
-            save_channel_link(origin_title, dest_chat_id)
+            await save_channel_link(self.client, origin_title, dest_chat_id)
             
             # Publish channel link if publish_chat_id is specified
             if self.publish_chat_id:

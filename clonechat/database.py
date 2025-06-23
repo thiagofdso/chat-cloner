@@ -5,7 +5,7 @@ import sqlite3
 from typing import Optional, Dict, Any
 from pathlib import Path
 
-from logging_config import (
+from .logging_config import (
     get_logger, 
     log_database_operation, 
     log_operation_error,
