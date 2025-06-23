@@ -1,0 +1,22 @@
+# Clonechat - Dependências do Projeto
+# Gerado a partir do pyproject.toml
+
+# Gerenciamento de configuração
+python-dotenv>=1.1.0,<2.0.0
+
+# Cliente Telegram
+pyrogram>=2.0.106,<3.0.0
+tgcrypto>=1.2.5,<2.0.0
+
+# Interface de linha de comando
+typer>=0.16.0,<0.17.0
+
+# Processamento de dados
+pandas>=2.3.0,<3.0.0
+
+# Processamento de arquivos
+zipind>=1.1.3,<2.0.0
+vidtool>=0.1.6,<0.2.0
+
+# Configuração do projeto
+toml>=0.10.0,<1.0.0 
