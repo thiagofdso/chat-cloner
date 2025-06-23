@@ -3,6 +3,9 @@
 config.ini
 !.env.example
 
+# Poetry
+poetry.lock
+
 # Database
 data/clonechat.db
 

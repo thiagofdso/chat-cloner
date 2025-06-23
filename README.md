@@ -125,28 +125,122 @@ CLONER_DOWNLOAD_PATH=./data/downloads/
 
 ## 🛠️ Instalação
 
-1. **Clone o repositório:**
+### Pré-requisitos
+- **Python 3.9+** instalado
+- **Poetry** instalado (gerenciador de dependências)
+
+### 1. Instalar o Poetry (se não tiver)
+```bash
+# Windows (PowerShell)
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+# Ou via pip
+pip install poetry
+```
+
+### 2. Clone o repositório
 ```bash
 git clone <repository-url>
 cd chatclone
 ```
 
-2. **Instale as dependências:**
+### 3. Instalar dependências com Poetry
 ```bash
+# Instalar todas as dependências
+poetry install
+
+# Ou ativar o ambiente virtual e instalar
+poetry shell
 poetry install
 ```
 
-3. **Configure as credenciais:**
+### 4. Configurar credenciais
 ```bash
+# Copiar arquivo de exemplo
 copy .env.example .env
-# Edite o arquivo .env e insira seu TELEGRAM_API_ID e TELEGRAM_API_HASH
+
+# Editar o arquivo .env com suas credenciais
+# TELEGRAM_API_ID=SeuApiIdAqui
+# TELEGRAM_API_HASH=SeuApiHashAqui
 ```
+
+### 5. Executar o projeto
+```bash
+# Usando Poetry
+poetry run python main.py --help
+
+# Ou ativando o ambiente virtual
+poetry shell
+python main.py --help
+```
+
+### Comandos úteis do Poetry
+```bash
+# Ver dependências instaladas
+poetry show
+
+# Adicionar nova dependência
+poetry add nome-do-pacote
+
+# Remover dependência
+poetry remove nome-do-pacote
+
+# Atualizar dependências
+poetry update
+
+# Ver informações do projeto
+poetry version
+```
+
+### Alternativa: Usando venv (Ambiente Virtual Python)
+
+Se preferir usar o ambiente virtual padrão do Python ao invés do Poetry:
+
+#### 1. Criar ambiente virtual
+```bash
+# Windows
+python -m venv venv
+
+# Ativar o ambiente virtual
+venv\Scripts\activate
+```
+
+#### 2. Instalar dependências
+```bash
+# Com o ambiente virtual ativado
+pip install -r requirements.txt
+```
+
+#### 3. Executar o projeto
+```bash
+# Com o ambiente virtual ativado
+python main.py --help
+```
+
+#### 4. Desativar ambiente virtual
+```bash
+deactivate
+```
+
+### Comparação: Poetry vs venv
+
+| Aspecto | Poetry | venv |
+|---------|--------|------|
+| **Gerenciamento** | Automático | Manual |
+| **Dependências** | `pyproject.toml` | `requirements.txt` |
+| **Lock file** | `poetry.lock` | Nenhum |
+| **Comando** | `poetry run python main.py` | `python main.py` |
+| **Instalação** | `poetry install` | `pip install -r requirements.txt` |
+| **Isolamento** | ✅ | ✅ |
+| **Versões** | Fixas | Flexíveis |
+
+**Recomendação**: Use **Poetry** para melhor controle de versões e isolamento.
 
 ## 📖 Uso
 
 ### Clonagem Individual (Estratégia Automática)
 ```bash
-python main.py sync --origin <ID_DO_CANAL>
+poetry run python main.py sync --origin <ID_DO_CANAL>
 ```
 - Detecta automaticamente se pode usar `forward` ou `download_upload`
 - **Não extrai áudio** se usar estratégia `forward`
@@ -154,7 +248,7 @@ python main.py sync --origin <ID_DO_CANAL>
 
 ### Clonagem com Extração de Áudio Forçada
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --force-download
+poetry run python main.py sync --origin <ID_DO_CANAL> --force-download
 ```
 - **Sempre usa** estratégia `download_upload`
 - **Sempre extrai áudio** de vídeos
@@ -162,21 +256,21 @@ python main.py sync --origin <ID_DO_CANAL> --force-download
 
 ### Clonagem para Canal Existente
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --dest <ID_CANAL_DESTINO>
+poetry run python main.py sync --origin <ID_DO_CANAL> --dest <ID_CANAL_DESTINO>
 ```
 - Usa um canal de destino existente em vez de criar um novo
 - Útil para continuar clonando em um canal já existente
 
 ### Clonagem e Sair do Canal de Origem
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --leave-origin
+poetry run python main.py sync --origin <ID_DO_CANAL> --leave-origin
 ```
 - Sai automaticamente do canal de origem após a clonagem
 - Por padrão, permanece no canal de origem
 
 ### Clonagem e Publicar Links
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO/CANAL>
+poetry run python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO/CANAL>
 ```
 - Publica automaticamente os links dos canais clonados em um grupo/canal
 - Útil para manter uma lista atualizada dos canais clonados
@@ -184,7 +278,7 @@ python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO/CANAL>
 
 ### Clonagem e Publicar em Tópico Específico
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO> --topic <ID_TOPICO>
+poetry run python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO> --topic <ID_TOPICO>
 ```
 - Publica os links em um tópico específico de um grupo
 - Requer que o grupo tenha tópicos habilitados
@@ -193,43 +287,43 @@ python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO> --topic <ID_T
 ### Combinações de Opções
 ```bash
 # Clonagem completa: extrair áudio, usar canal existente, sair do origem e publicar links
-python main.py sync --origin <ID_DO_CANAL> --force-download --dest <ID_DESTINO> --leave-origin --publish-to <ID_GRUPO>
+poetry run python main.py sync --origin <ID_DO_CANAL> --force-download --dest <ID_DESTINO> --leave-origin --publish-to <ID_GRUPO>
 
 # Clonagem simples para canal existente e publicar links
-python main.py sync --origin <ID_DO_CANAL> --dest <ID_DESTINO> --publish-to <ID_GRUPO>
+poetry run python main.py sync --origin <ID_DO_CANAL> --dest <ID_DESTINO> --publish-to <ID_GRUPO>
 ```
 
 ### Clonagem em Lote
 ```bash
-python main.py sync --batch --source arquivo_com_ids.txt
+poetry run python main.py sync --batch --source arquivo_com_ids.txt
 ```
 
 ### Clonagem em Lote com Extração de Áudio
 ```bash
-python main.py sync --batch --source arquivo_com_ids.txt --force-download
+poetry run python main.py sync --batch --source arquivo_com_ids.txt --force-download
 ```
 
 ### Modo Restart (Força Nova Clonagem)
 ```bash
-python main.py sync --origin <ID_DO_CANAL> --restart
+poetry run python main.py sync --origin <ID_DO_CANAL> --restart
 ```
 
 ### Verificar Versão
 ```bash
-python main.py version
+poetry run python main.py version
 ```
 
 ### Inicializar Banco de Dados
 ```bash
-python main.py init-database
+poetry run python main.py init-database
 ```
 - Inicializa ou atualiza o banco de dados
-- Cria as tabelas necessárias (SyncTasks e DownloadTasks)
+- Cria as tabelas necessárias (SyncTasks, DownloadTasks e PublishTasks)
 - Útil após atualizações que adicionam novas tabelas
 
 ### Listar Chats Disponíveis
 ```bash
-python main.py list-chats
+poetry run python main.py list-chats
 ```
 - Lista todos os chats, grupos e canais que o usuário tem acesso
 - Mostra ID, nome e tipo de cada chat
@@ -237,7 +331,7 @@ python main.py list-chats
 
 ### Testar Resolução de Chat
 ```bash
-python main.py test-resolve --id <ID_DO_CANAL>
+poetry run python main.py test-resolve --id <ID_DO_CANAL>
 ```
 - Testa se um ID, username ou link de chat pode ser resolvido
 - Verifica se o usuário tem acesso ao chat
@@ -245,7 +339,7 @@ python main.py test-resolve --id <ID_DO_CANAL>
 
 ### Download de Vídeos com Extração de Áudio
 ```bash
-python main.py download --origin <ID_DO_CANAL>
+poetry run python main.py download --origin <ID_DO_CANAL>
 ```
 - Baixa todos os vídeos de um canal
 - Extrai automaticamente o áudio de cada vídeo em MP3
@@ -255,38 +349,73 @@ python main.py download --origin <ID_DO_CANAL>
 
 ### Download com Limite de Vídeos
 ```bash
-python main.py download --origin <ID_DO_CANAL> --limit 10
+poetry run python main.py download --origin <ID_DO_CANAL> --limit 10
 ```
 - Baixa apenas os 10 vídeos mais recentes
 - Útil para testar ou baixar apenas alguns vídeos
 
 ### Download para Diretório Específico
 ```bash
-python main.py download --origin <ID_DO_CANAL> --output ./meus_videos/
+poetry run python main.py download --origin <ID_DO_CANAL> --output ./meus_videos/
 ```
 - Salva os arquivos em um diretório específico
 - Por padrão, salva em `./downloads/Nome_do_Canal/`
 
 ### Download com Restart (Força Novo Download)
 ```bash
-python main.py download --origin <ID_DO_CANAL> --restart
+poetry run python main.py download --origin <ID_DO_CANAL> --restart
 ```
 - Força um novo download do zero
 - Apaga dados anteriores de progresso
 - Útil quando quer recomeçar completamente
+
+### Publicação de Pastas Locais (Pipeline Zimatise)
+```bash
+poetry run python main.py publish --folder <CAMINHO_PASTA>
+```
+- Publica uma pasta local no Telegram usando o pipeline Zimatise
+- Processa automaticamente através de várias etapas:
+  1. **Compactação** de arquivos
+  2. **Geração** de relatórios
+  3. **Recodificação** de vídeos
+  4. **Junção** de arquivos
+  5. **Adição** de timestamps
+  6. **Upload** para Telegram
+- **Resume automaticamente** de onde parou se interrompido
+- Útil para backup e compartilhamento de projetos
+
+### Publicação com Restart (Força Nova Publicação)
+```bash
+poetry run python main.py publish --folder <CAMINHO_PASTA> --restart
+```
+- Força uma nova publicação do zero
+- Apaga dados anteriores de progresso
+- Útil quando quer recomeçar completamente
+
+### Exemplos de Publicação
+```bash
+# Publicar pasta de projeto
+poetry run python main.py publish --folder C:/meus_projetos/curso_python
+
+# Publicar pasta com restart
+poetry run python main.py publish --folder C:/meus_projetos/curso_python --restart
+
+# Publicar pasta com caminho relativo
+poetry run python main.py publish --folder ./projetos/meu_projeto
+```
 
 ### Comandos de Diagnóstico
 
 #### `list-chats`
 Lista todos os chats acessíveis pela sua conta:
 ```bash
-python main.py list-chats
+poetry run python main.py list-chats
 ```
 
 #### `list-topics`
 Lista todos os tópicos de um grupo com tópicos habilitados:
 ```bash
-python main.py list-topics --id <ID_GRUPO>
+poetry run python main.py list-topics --id <ID_GRUPO>
 ```
 - Mostra o ID e o nome de cada tópico
 - Útil para descobrir o ID correto para usar com `--topic`
@@ -295,7 +424,7 @@ python main.py list-topics --id <ID_GRUPO>
 #### `test-resolve`
 Testa a resolução de um identificador de chat:
 ```bash
-python main.py test-resolve --id <ID_USERNAME_LINK>
+poetry run python main.py test-resolve --id <ID_USERNAME_LINK>
 ```
 
 ## 📁 Estrutura do Projeto
@@ -394,7 +523,7 @@ https://t.me/c/1234567890/1
 #### Configuração de Tópicos
 Para grupos com tópicos habilitados, você pode especificar um tópico específico:
 - Use `--topic <ID_TOPICO>` para publicar em um tópico específico
-- Use `python main.py list-topics --id <ID_GRUPO>` para descobrir os IDs dos tópicos
+- Use `poetry run python main.py list-topics --id <ID_GRUPO>` para descobrir os IDs dos tópicos
 - Útil para organizar links por categoria (ex: "Canais de Tecnologia", "Canais de Marketing")
 - O ID do tópico pode ser obtido através do comando `list-topics` ou da API do Telegram
 
@@ -414,6 +543,25 @@ O Clonechat mantém o progresso de todas as operações no banco de dados SQLite
 - `last_downloaded_message_id`: ID da última mensagem baixada
 - `total_videos`: Total de vídeos no canal
 - `downloaded_videos`: Número de vídeos já baixados
+- `created_at`: Data de criação da tarefa
+- `updated_at`: Data da última atualização
+
+#### Tabela PublishTasks (Publicação)
+- `source_folder_path`: Caminho da pasta fonte (chave primária)
+- `project_name`: Nome do projeto
+- `destination_chat_id`: ID do chat de destino
+- `current_step`: Etapa atual do pipeline
+- `status`: Status da tarefa (pending, running, completed, failed)
+- `is_started`: Flag se a tarefa foi iniciada
+- `is_zipped`: Flag se a compactação foi concluída
+- `is_reported`: Flag se os relatórios foram gerados
+- `is_reencode_auth`: Flag se a autorização de recodificação foi obtida
+- `is_reencoded`: Flag se a recodificação foi concluída
+- `is_joined`: Flag se a junção foi concluída
+- `is_timestamped`: Flag se os timestamps foram adicionados
+- `is_upload_auth`: Flag se a autorização de upload foi obtida
+- `is_published`: Flag se a publicação foi concluída
+- `last_uploaded_file`: Último arquivo enviado
 - `created_at`: Data de criação da tarefa
 - `updated_at`: Data da última atualização
 
@@ -447,7 +595,7 @@ TELEGRAM_API_ID is required
 ```
 no such table: DownloadTasks
 ```
-**Solução**: Execute `python main.py init-database` para criar as tabelas necessárias.
+**Solução**: Execute `poetry run python main.py init-database` para criar as tabelas necessárias.
 
 ### Erro de acesso a chat
 ```
@@ -455,8 +603,8 @@ Cannot resolve chat identifier
 ```
 **Solução**: 
 - Verifique se você é membro do canal/grupo
-- Use `python main.py list-chats` para ver os chats disponíveis
-- Use `python main.py test-resolve --id <ID>` para testar acesso específico
+- Use `poetry run python main.py list-chats` para ver os chats disponíveis
+- Use `poetry run python main.py test-resolve --id <ID>` para testar acesso específico
 
 ### Áudio não sendo extraído
 ```
@@ -500,10 +648,10 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 ### Fluxo Completo de Clonagem
 ```bash
 # 1. Verificar acesso ao canal
-python main.py test-resolve --id -1002859374479
+poetry run python main.py test-resolve --id -1002859374479
 
 # 2. Clonar com extração de áudio e publicar links
-python main.py sync --origin -1002859374479 --force-download --publish-to -1001234567890
+poetry run python main.py sync --origin -1002859374479 --force-download --publish-to -1001234567890
 
 # 3. Verificar links salvos
 cat links_canais.txt
@@ -512,13 +660,13 @@ cat links_canais.txt
 ### Fluxo Completo de Clonagem com Tópicos
 ```bash
 # 1. Verificar acesso ao canal
-python main.py test-resolve --id -1002859374479
+poetry run python main.py test-resolve --id -1002859374479
 
 # 2. Listar tópicos do grupo onde publicar
-python main.py list-topics --id -1001234567890
+poetry run python main.py list-topics --id -1001234567890
 
 # 3. Clonar e publicar em tópico específico
-python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
+poetry run python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
 
 # 4. Verificar links salvos
 cat links_canais.txt
@@ -527,53 +675,74 @@ cat links_canais.txt
 ### Fluxo de Download de Vídeos
 ```bash
 # 1. Listar canais disponíveis
-python main.py list-chats
+poetry run python main.py list-chats
 
 # 2. Baixar vídeos com limite
-python main.py download --origin -1002859374479 --limit 5
+poetry run python main.py download --origin -1002859374479 --limit 5
 
 # 3. Se interrompido, retomar automaticamente
-python main.py download --origin -1002859374479
+poetry run python main.py download --origin -1002859374479
 
 # 4. Para forçar novo download
-python main.py download --origin -1002859374479 --restart
+poetry run python main.py download --origin -1002859374479 --restart
+```
+
+### Fluxo de Publicação de Pastas
+```bash
+# 1. Publicar pasta de projeto
+poetry run python main.py publish --folder C:/meus_projetos/curso_python
+
+# 2. Se interrompido, retomar automaticamente
+poetry run python main.py publish --folder C:/meus_projetos/curso_python
+
+# 3. Para forçar nova publicação
+poetry run python main.py publish --folder C:/meus_projetos/curso_python --restart
+
+# 4. Publicar pasta com caminho relativo
+poetry run python main.py publish --folder ./projetos/meu_projeto
 ```
 
 ### Diagnóstico de Problemas
 ```bash
 # Verificar versão
-python main.py version
+poetry run python main.py version
 
 # Inicializar banco de dados
-python main.py init-database
+poetry run python main.py init-database
 
 # Testar acesso específico
-python main.py test-resolve --id @canal_username
+poetry run python main.py test-resolve --id @canal_username
 
 # Listar todos os chats
-python main.py list-chats
+poetry run python main.py list-chats
 
 # Listar tópicos de um grupo
-python main.py list-topics --id -1001234567890
+poetry run python main.py list-topics --id -1001234567890
 ```
 
 ### Uso Avançado
 ```bash
 # Clonar para canal existente
-python main.py sync --origin -1002859374479 --dest -1002749622339
+poetry run python main.py sync --origin -1002859374479 --dest -1002749622339
 
 # Clonar e sair do canal origem
-python main.py sync --origin -1002859374479 --leave-origin
+poetry run python main.py sync --origin -1002859374479 --leave-origin
 
 # Clonar e publicar links em grupo
-python main.py sync --origin -1002859374479 --publish-to -1001234567890
+poetry run python main.py sync --origin -1002859374479 --publish-to -1001234567890
 
 # Clonar e publicar em tópico específico
-python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
+poetry run python main.py sync --origin -1002859374479 --publish-to -1001234567890 --topic 123
 
 # Download para diretório específico
-python main.py download --origin -1002859374479 --output ./meus_videos/
+poetry run python main.py download --origin -1002859374479 --output ./meus_videos/
 
 # Processamento em lote
-python main.py sync --batch --source canais.txt
+poetry run python main.py sync --batch --source canais.txt
+
+# Publicação de pastas locais
+poetry run python main.py publish --folder C:/meus_projetos/curso_python
+
+# Publicação com restart
+poetry run python main.py publish --folder C:/meus_projetos/curso_python --restart
 ```
