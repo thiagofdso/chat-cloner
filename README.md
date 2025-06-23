@@ -31,6 +31,98 @@ Ferramenta avançada para clonar chats do Telegram com arquitetura moderna e rec
 - **Credenciais do Telegram** (API ID e API Hash)
     - Obtenha em: https://my.telegram.org/apps
 
+## 🔑 Como Obter as Credenciais do Telegram
+
+### 1. API ID e API Hash
+
+Para usar a API do Telegram, você precisa criar uma aplicação e obter suas credenciais:
+
+#### Passo 1: Acesse o Telegram Core
+1. Abra seu navegador e vá para: https://my.telegram.org
+2. Faça login com seu número de telefone do Telegram
+3. Clique em "API development tools"
+
+#### Passo 2: Crie uma Nova Aplicação
+1. Preencha o formulário com as seguintes informações:
+   - **App title**: Nome da sua aplicação (ex: "Clonechat")
+   - **Short name**: Nome curto (ex: "clonechat")
+   - **Platform**: Selecione "Desktop"
+   - **Description**: Descrição da aplicação (ex: "Ferramenta para clonar chats do Telegram")
+
+#### Passo 3: Obtenha as Credenciais
+Após submeter o formulário, você receberá:
+- **api_id**: Um número inteiro (ex: 12345678)
+- **api_hash**: Uma string hexadecimal (ex: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6")
+
+⚠️ **Importante**: Mantenha essas credenciais seguras e nunca as compartilhe publicamente.
+
+### 2. Token do Bot (Opcional)
+
+Se você planeja usar funcionalidades que requerem um bot, siga estes passos:
+
+#### Passo 1: Acesse o BotFather
+1. Abra o aplicativo Telegram
+2. Na barra de pesquisa, digite `@BotFather`
+3. Selecione o bot oficial (tem um selo de verificação azul)
+4. Clique em "Iniciar"
+
+#### Passo 2: Crie um Novo Bot
+1. Digite o comando `/newbot` ou clique no comando na lista
+2. O BotFather solicitará um nome para seu bot (visível para usuários)
+3. Escolha um nome de usuário (username) que deve:
+   - Ser único
+   - Terminar com "bot" (ex: "meu_bot", "teste123_bot")
+
+#### Passo 3: Receba o Token
+Após a criação, o BotFather fornecerá:
+- Link para acessar seu bot: `t.me/seu_bot_username`
+- Token único no formato: `123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
+
+#### Configurações Adicionais do Bot (Opcional)
+- **Desabilitar Grupos**: Para bots que funcionam apenas em conversas privadas
+  - Digite `/mybots`
+  - Selecione seu bot → Bot Settings → Allow Groups → Turn groups off
+- **Definir Descrição**: Use `/setdescription` para adicionar uma descrição
+
+### 3. Configuração das Credenciais
+
+Após obter suas credenciais, configure-as no arquivo `.env`:
+
+```ini
+# Credenciais obrigatórias
+TELEGRAM_API_ID=12345678
+TELEGRAM_API_HASH=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+
+# Credenciais opcionais (se usar funcionalidades de bot)
+TELEGRAM_BOT_TOKEN=123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+
+# Configurações da aplicação
+CLONER_DELAY_SECONDS=2
+CLONER_DOWNLOAD_PATH=./data/downloads/
+```
+
+### ⚠️ Observações de Segurança
+
+- **Nunca compartilhe** suas credenciais publicamente
+- **Não commite** o arquivo `.env` no repositório
+- **Use números de telefone ativos** para evitar problemas de verificação
+- **Respeite os Termos de Serviço** da API do Telegram
+- **Evite spam e flooding** para não ser banido
+
+### 🔧 Solução de Problemas com Credenciais
+
+#### Erro: "API_ID is required"
+- Verifique se o arquivo `.env` existe e está configurado corretamente
+- Confirme se as credenciais foram copiadas sem espaços extras
+
+#### Erro: "Invalid API ID/Hash"
+- Verifique se as credenciais estão corretas
+- Confirme se você está usando o número de telefone correto
+
+#### Erro: "Phone number banned"
+- Se sua conta foi banida, entre em contato com recover@telegram.org
+- Explique seu caso de uso e peça para desbanir sua conta
+
 ## 🛠️ Instalação
 
 1. **Clone o repositório:**
