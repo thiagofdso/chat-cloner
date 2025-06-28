@@ -6,8 +6,8 @@ Ferramenta avançada para clonar chats do Telegram com arquitetura moderna e rec
 
 - **Clonagem Automática**: Criação automática de canais de destino
 - **Detecção Inteligente**: Estratégia automática (forward ou download-upload)
-- **Extração de Áudio**: Extração automática de áudio de vídeos via FFmpeg
-- **Força Download**: Opção para forçar estratégia download-upload e extrair áudio
+- **Extração de Áudio Opcional**: Extraia áudio de vídeos com a flag `--extract-audio` ao usar a estratégia `download-upload`.
+- **Forçar Estratégia**: Opção `--force-download` para forçar a estratégia `download-upload`.
 - **Salvamento de Links**: Arquivo `links_canais.txt` com links dos canais clonados
 - **Processamento de Mídia**: Suporte completo a todos os tipos de mensagem
 - **Logging Avançado**: Sistema de logs estruturado com saída para console e arquivo
@@ -246,13 +246,20 @@ poetry run python main.py sync --origin <ID_DO_CANAL>
 - **Não extrai áudio** se usar estratégia `forward`
 - **Não sai** do canal de origem por padrão
 
-### Clonagem com Extração de Áudio Forçada
+### Clonagem com Extração de Áudio (Requer Estratégia Download-Upload)
+```bash
+poetry run python main.py sync --origin <ID_DO_CANAL> --extract-audio
+```
+- **Extrai áudio** de vídeos se a estratégia `download-upload` for usada.
+- Arquivos MP3 são salvos na pasta do canal
+- Se o canal não permitir encaminhamento, a estratégia `download-upload` será usada automaticamente. Se permitir, use `--force-download` para forçar a estratégia e permitir a extração.
+
+### Clonagem Forçando Estratégia Download-Upload
 ```bash
 poetry run python main.py sync --origin <ID_DO_CANAL> --force-download
 ```
-- **Sempre usa** estratégia `download_upload`
-- **Sempre extrai áudio** de vídeos
-- Arquivos MP3 são salvos na pasta do canal
+- **Sempre usa** a estratégia `download-upload`, mesmo que o encaminhamento seja permitido.
+- **Não extrai áudio** por padrão. Use `--extract-audio` para isso.
 
 ### Clonagem para Canal Existente
 ```bash
@@ -286,8 +293,8 @@ poetry run python main.py sync --origin <ID_DO_CANAL> --publish-to <ID_GRUPO> --
 
 ### Combinações de Opções
 ```bash
-# Clonagem completa: extrair áudio, usar canal existente, sair do origem e publicar links
-poetry run python main.py sync --origin <ID_DO_CANAL> --force-download --dest <ID_DESTINO> --leave-origin --publish-to <ID_GRUPO>
+# Clonagem completa: forçar download, extrair áudio, usar canal existente, sair do origem e publicar links
+poetry run python main.py sync --origin <ID_DO_CANAL> --force-download --extract-audio --dest <ID_DESTINO> --leave-origin --publish-to <ID_GRUPO>
 
 # Clonagem simples para canal existente e publicar links
 poetry run python main.py sync --origin <ID_DO_CANAL> --dest <ID_DESTINO> --publish-to <ID_GRUPO>
@@ -300,7 +307,7 @@ poetry run python main.py sync --batch --source arquivo_com_ids.txt
 
 ### Clonagem em Lote com Extração de Áudio
 ```bash
-poetry run python main.py sync --batch --source arquivo_com_ids.txt --force-download
+poetry run python main.py sync --batch --source arquivo_com_ids.txt --extract-audio
 ```
 
 ### Modo Restart (Força Nova Clonagem)
@@ -483,8 +490,8 @@ Crie um arquivo de texto com IDs de chat, um por linha:
 - Animações, Video Notes, Polls
 
 ### Recursos Avançados
-- **Extração de Áudio**: Vídeos são processados para extrair áudio em MP3
-- **Força Download**: Opção `--force-download` para sempre extrair áudio
+- **Extração de Áudio**: Com a flag `--extract-audio`, vídeos são processados para extrair áudio em MP3 quando a estratégia `download-upload` é usada.
+- **Força Download**: Opção `--force-download` para sempre usar a estratégia `download-upload`.
 - **Canal de Destino Existente**: Opção `--dest` para usar canal existente
 - **Controle de Saída**: Opção `--leave-origin` para sair do canal de origem
 - **Salvamento de Links**: Links dos canais clonados salvos em `links_canais.txt`
@@ -638,7 +645,7 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 - O arquivo `.env**não** deve ser versionado
 - Use o modo `--restart` com cuidado, pois apaga dados anteriores
 - O sistema cria automaticamente canais de destino (a menos que `--dest` seja especificado)
-- Use `--force-download` para garantir extração de áudio de todos os vídeos
+- Use a combinação `--force-download` e `--extract-audio` para garantir a extração de áudio de todos os vídeos.
 - Os arquivos MP3 extraídos são preservados na pasta do canal
 - Por padrão, o sistema **não sai** do canal de origem (use `--leave-origin` se necessário)
 - Ao usar `--dest`, certifique-se de ter permissões de escrita no canal de destino 
@@ -650,8 +657,8 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
 # 1. Verificar acesso ao canal
 poetry run python main.py test-resolve --id -1002859374479
 
-# 2. Clonar com extração de áudio e publicar links
-poetry run python main.py sync --origin -1002859374479 --force-download --publish-to -1001234567890
+# 2. Clonar com extração de áudio (forçando a estratégia de download) e publicar links
+poetry run python main.py sync --origin -1002859374479 --force-download --extract-audio --publish-to -1001234567890
 
 # 3. Verificar links salvos
 cat links_canais.txt

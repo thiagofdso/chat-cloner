@@ -759,6 +759,7 @@ async def download_process_upload(
     destination_chat: int,
     download_path: Path,
     delay_seconds: int,
+    extract_audio: bool = False,
 ) -> int:
     """
     Processes a message, handling both text and media types.
@@ -771,6 +772,7 @@ async def download_process_upload(
         destination_chat: The destination chat ID.
         download_path: The base directory for downloads for this task.
         delay_seconds: Delay after processing the message.
+        extract_audio: If True, extract audio from videos.
         
     Returns:
         The ID of the sent message.
@@ -801,7 +803,7 @@ async def download_process_upload(
             if downloaded_path:
                 # Extração de áudio é um efeito colateral, não afeta o upload
                 audio_path = None
-                if message.video:
+                if message.video and extract_audio:
                     await _extract_audio(message, downloaded_path)
                     # Get the audio file path that was created
                     audio_path = downloaded_path.with_suffix(".mp3")

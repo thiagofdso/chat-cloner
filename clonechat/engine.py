@@ -169,7 +169,7 @@ class ClonerEngine:
     Main cloning engine that handles automatic strategy detection and chat synchronization.
     """
     
-    def __init__(self, config: Config, client: Client, force_download: bool = False, leave_origin: bool = False, dest_chat_id: Optional[int] = None, publish_chat_id: Optional[int] = None, topic_id: Optional[int] = None):
+    def __init__(self, config: Config, client: Client, force_download: bool = False, leave_origin: bool = False, dest_chat_id: Optional[int] = None, publish_chat_id: Optional[int] = None, topic_id: Optional[int] = None, extract_audio: bool = False):
         """
         Initialize the ClonerEngine.
         
@@ -181,6 +181,7 @@ class ClonerEngine:
             dest_chat_id: Destination channel ID (if None, creates a new channel).
             publish_chat_id: Chat ID where to publish cloned channel links.
             topic_id: Topic ID for publishing in groups with topics.
+            extract_audio: If True, extract audio from videos.
         """
         self.config = config
         self.client = client
@@ -189,6 +190,7 @@ class ClonerEngine:
         self.dest_chat_id = dest_chat_id
         self.publish_chat_id = publish_chat_id
         self.topic_id = topic_id
+        self.extract_audio = extract_audio
         self.logger = get_logger(__name__)
         
         # Message ID mapping for pinned messages functionality
@@ -596,7 +598,8 @@ class ClonerEngine:
                 message=message,
                 destination_chat=dest_chat_id,
                 download_path=download_path,
-                delay_seconds=self.config.cloner_delay_seconds
+                delay_seconds=self.config.cloner_delay_seconds,
+                extract_audio=self.extract_audio
             )
             
             return sent_message_id
