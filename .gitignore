@@ -73,3 +73,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db 
+clonechat_user.session-journal
+
+# Project file
+canais.txt
