@@ -11,6 +11,7 @@ data/clonechat.db
 
 # Downloads
 data/downloads/
+data/project_workspace/
 
 # Telegram session files
 *.session
@@ -72,3 +73,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db 
+clonechat_user.session-journal
+
+# Project file
+canais.txt

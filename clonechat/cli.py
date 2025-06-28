@@ -120,7 +120,8 @@ async def run_sync_async(
     leave_origin: bool = False,
     dest: Optional[str] = None,
     publish_to: Optional[str] = None,
-    topic_id: Optional[int] = None
+    topic_id: Optional[int] = None,
+    extract_audio: bool = False
 ) -> None:
     """
     Async wrapper for the sync operation.
@@ -135,6 +136,7 @@ async def run_sync_async(
         dest: Destination channel ID, username or link (if None, creates a new channel).
         publish_to: ID, username or link of the group/channel to publish the links of cloned channels.
         topic_id: ID of the topic (for groups with topic enabled).
+        extract_audio: Whether to extract audio from videos when using download-upload strategy.
     """
     try:
         log_operation_start(logger, "run_sync_async", origin=origin, batch=batch, restart=restart)
@@ -169,7 +171,7 @@ async def run_sync_async(
         if publish_to:
             publish_chat_id = await resolve_chat_id(client, publish_to)
         
-        engine = ClonerEngine(config, client, force_download=force_download, leave_origin=leave_origin, dest_chat_id=dest_chat_id, publish_chat_id=publish_chat_id, topic_id=topic_id)
+        engine = ClonerEngine(config, client, force_download=force_download, leave_origin=leave_origin, dest_chat_id=dest_chat_id, publish_chat_id=publish_chat_id, topic_id=topic_id, extract_audio=extract_audio)
         logger.info("🚀 Motor de clonagem inicializado")
         
         if batch:
@@ -247,6 +249,11 @@ def sync(
         "-f",
         help="Forçar estratégia download_upload para extrair áudio de vídeos"
     ),
+    extract_audio: bool = typer.Option(
+        False,
+        "--extract-audio",
+        help="Extrair áudio de vídeos na estratégia download-upload (default: False)"
+    ),
     leave_origin: bool = typer.Option(
         False,
         "--leave-origin",
@@ -283,8 +290,8 @@ def sync(
     - Forward: Encaminhamento direto (mais rápido, sem extração de áudio)
     - Download-Upload: Download, processamento e upload (extrai áudio de vídeos)
     
-    Use --force-download para sempre usar a estratégia download_upload,
-    garantindo que o áudio seja extraído de todos os vídeos.
+    Use --force-download para sempre usar a estratégia download_upload.
+    Use --extract-audio para extrair o áudio dos vídeos ao usar a estratégia de download-upload.
     
     Use --dest para especificar um canal de destino existente em vez de criar um novo.
     Use --leave-origin para sair do canal de origem após a clonagem.
@@ -293,7 +300,7 @@ def sync(
     
     Modos de uso:
     - Individual: python main.py sync --origin 123456789
-    - Com extração de áudio: python main.py sync --origin 123456789 --force-download
+    - Com extração de áudio: python main.py sync --origin 123456789 --force-download --extract-audio
     - Para canal existente: python main.py sync --origin 123456789 --dest 987654321
     - Sair do canal origem: python main.py sync --origin 123456789 --leave-origin
     - Publicar links: python main.py sync --origin 123456789 --publish-to -1001234567890
@@ -316,7 +323,7 @@ def sync(
                 raise typer.BadParameter("--source só deve ser usado com --batch")
         
         # Executar operação assíncrona
-        asyncio.run(run_sync_async(origin, batch, source, restart, force_download, leave_origin, dest, publish_to, topic_id))
+        asyncio.run(run_sync_async(origin, batch, source, restart, force_download, leave_origin, dest, publish_to, topic_id, extract_audio))
         
         log_operation_success(logger, "sync_command", origin=origin, batch=batch, restart=restart)
         
