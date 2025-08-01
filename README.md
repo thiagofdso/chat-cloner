@@ -390,14 +390,11 @@ poetry run python main.py publish --folder <CAMINHO_PASTA>
   6. **Upload** para Telegram
 - **Resume automaticamente** de onde parou se interrompido
 - Útil para backup e compartilhamento de projetos
+- Agora suporta as opções `--publish-to` e `--topic` para publicar o link do canal publicado em um grupo/canal e tópico específico, igual ao comando sync.
 
-### Publicação com Restart (Força Nova Publicação)
-```bash
-poetry run python main.py publish --folder <CAMINHO_PASTA> --restart
-```
-- Força uma nova publicação do zero
-- Apaga dados anteriores de progresso
-- Útil quando quer recomeçar completamente
+#### Novas opções:
+- `--publish-to <ID_GRUPO/CANAL>`: Publica automaticamente o link do canal publicado em um grupo/canal específico.
+- `--topic <ID_TOPICO>`: Publica a mensagem no tópico especificado do grupo (útil para grupos com tópicos habilitados).
 
 ### Exemplos de Publicação
 ```bash
@@ -409,6 +406,12 @@ poetry run python main.py publish --folder C:/meus_projetos/curso_python --resta
 
 # Publicar pasta com caminho relativo
 poetry run python main.py publish --folder ./projetos/meu_projeto
+
+# Publicar pasta e enviar o link do canal publicado para um grupo/canal
+poetry run python main.py publish --folder ./projetos/meu_projeto --publish-to -1001234567890
+
+# Publicar pasta e enviar o link do canal publicado para um tópico específico de um grupo
+poetry run python main.py publish --folder ./projetos/meu_projeto --publish-to -1001234567890 --topic 123
 ```
 
 ### Comandos de Diagnóstico

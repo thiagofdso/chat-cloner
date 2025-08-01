@@ -218,7 +218,7 @@ class PublishPipeline:
             reencode_plan = self.config.reencode_plan
             
             # Define report file path
-            report_file = self.project_process_path / "video_details.xlsx"
+            report_file = self.project_process_path / "video_details.csv"
             
             logger.info(f"📋 Arquivo de relatório: {report_file}")
             logger.info(f"🎬 Extensões de vídeo: {video_extensions}")
@@ -248,7 +248,7 @@ class PublishPipeline:
         """
         Step 3: Reencode videos according to plan.
         
-        This step reencodes videos marked in the video_details.xlsx report
+        This step reencodes videos marked in the video_details.csv report
         and corrects duration metadata.
         
         Returns:
@@ -258,7 +258,7 @@ class PublishPipeline:
             logger.info(f"🎬 Iniciando recodificação de vídeos para: {self.source_folder}")
             
             # Define paths
-            report_file = self.project_process_path / "video_details.xlsx"
+            report_file = self.project_process_path / "video_details.csv"
             videos_encoded_path = self.project_process_path / "videos_encoded"
             
             # Ensure encoded videos directory exists
@@ -291,111 +291,159 @@ class PublishPipeline:
     
     async def _step_join(self) -> bool:
         """
-        Step 4: Join files according to plan.
-        
-        This step splits videos that are too big and joins them according
-        to the group plan defined in the video_details.xlsx report.
-        
+        Step 4: Join/Finalize files according to the processing plan.
+
+        For 'group' plan, it joins videos.
+        For 'single' plan, it identifies the correct final version of each video
+        (split, re-encoded, or original) and copies it to the output folder.
+
         Returns:
             bool: True if successful, False otherwise.
         """
         try:
-            logger.info(f"🔗 Iniciando junção de arquivos para: {self.source_folder}")
-            
+            logger.info(f"🔗 Iniciando etapa de junção/finalização para: {self.source_folder}")
+
             # Get configuration parameters
             file_size_limit_mb = int(self.config.file_size_limit_mb)
             duration_limit = self.config.duration_limit
             start_index = int(self.config.start_index)
-            activate_transition = self.config.activate_transition
-            
+            activate_transition = self.config.activate_transition == "true"
+            reencode_plan = self.config.reencode_plan
+
             # Define paths
-            report_file = self.project_process_path / "video_details.xlsx"
+            report_file = self.project_process_path / "video_details.csv"
             videos_splitted_path = self.project_process_path / "videos_splitted"
-            videos_joined_path = self.project_output_path
+            videos_joined_path = self.project_output_path # Final files go here
             videos_cache_path = self.project_process_path / "cache"
             videos_encoded_path = self.project_process_path / "videos_encoded"
-            
+
             # Ensure directories exist
-            videos_splitted_path.mkdir(parents=True, exist_ok=True)
-            videos_joined_path.mkdir(parents=True, exist_ok=True)
-            videos_cache_path.mkdir(parents=True, exist_ok=True)
-            
-            # Get normalized folder name for output
+            for p in [videos_splitted_path, videos_joined_path, videos_cache_path, videos_encoded_path]:
+                p.mkdir(parents=True, exist_ok=True)
+
             filename_output = vidtool.get_folder_name_normalized(self.source_folder)
             
             logger.info(f"📋 Arquivo de relatório: {report_file}")
-            logger.info(f"✂️ Pasta de vídeos divididos: {videos_splitted_path}")
-            logger.info(f"🔗 Pasta de vídeos juntados: {videos_joined_path}")
-            logger.info(f"💾 Pasta de cache: {videos_cache_path}")
-            logger.info(f"📁 Nome do arquivo de saída: {filename_output}")
-            
-            # Update progress
-            await self._update_progress("joining", "Juntando arquivos de vídeo")
-            
-            # Fill group column if using group plan
-            if self.config.reencode_plan == "group":
-                logger.info("📊 Preenchendo coluna de grupo")
-                vidtool.set_group_column(str(report_file))
-                logger.info("✅ Coluna de grupo preenchida")
-            
-            # Split videos that are too big
-            logger.info("✂️ Dividindo vídeos muito grandes")
+            logger.info(f"🔄 Plano de processamento: {reencode_plan}")
+
+            await self._update_progress("joining", "Iniciando junção/finalização de vídeos")
+
+            # Always run split check first, as it's based on the report
+            logger.info("✂️ Verificando e dividindo vídeos grandes conforme o plano")
             vidtool.set_split_videos(
                 str(report_file),
                 file_size_limit_mb,
                 str(videos_splitted_path),
                 duration_limit,
             )
-            logger.info("✅ Vídeos divididos")
-            
-            # Join videos if using group plan
-            if self.config.reencode_plan == "group":
-                logger.info("🔗 Juntando vídeos")
+            logger.info("✅ Verificação de divisão de vídeos concluída")
+
+            if reencode_plan == "group":
+                logger.info("🔗 Modo 'group': Juntando vídeos")
+                
+                # Fill group column - essential for joining
+                logger.info("📊 Preenchendo coluna de grupo no relatório")
+                vidtool.set_group_column(str(report_file))
+                
                 vidtool.set_join_videos(
-                    str(report_file),
-                    file_size_limit_mb,
-                    filename_output,
-                    str(videos_joined_path),
-                    str(videos_cache_path),
-                    duration_limit,
-                    start_index,
-                    activate_transition,
+                    file_path_report=str(report_file),
+                    file_size_limit_mb=file_size_limit_mb,
+                    filename_output=filename_output,
+                    folder_path_videos_joined=str(videos_joined_path),
+                    folder_path_videos_cache=str(videos_cache_path),
+                    duration_limit=duration_limit,
+                    start_index=start_index,
+                    activate_transition=activate_transition,
                 )
-                logger.info("✅ Vídeos juntados")
-            else:
-                # Modo single: copiar vídeos finais para output_videos
-                logger.info("📋 Modo single: copiando vídeos finais para output_videos")
-                # Preferir vídeos recodificados, senão originais
-                encoded_videos = list(videos_encoded_path.glob("*.mp4"))
-                if encoded_videos:
-                    for video in encoded_videos:
-                        shutil.copy2(video, videos_joined_path / video.name)
-                else:
-                    # Se não houver recodificados, copiar originais
-                    for video in self.source_folder.glob("*.mp4"):
-                        shutil.copy2(video, videos_joined_path / video.name)
-                logger.info("✅ Vídeos copiados para output_videos")
+                logger.info("✅ Vídeos juntados com sucesso")
             
-            logger.info(f"✅ Junção de arquivos concluída com sucesso")
-            logger.info(f"📁 Arquivos finais salvos em: {videos_joined_path}")
+            else: # single mode
+                logger.info("📋 Modo 'single': Finalizando arquivos de vídeo individuais")
+                
+                try:
+                    import pandas as pd
+                except ImportError:
+                    logger.error("❌ A biblioteca 'pandas' é necessária para o modo single. Instale com 'pip install pandas'")
+                    return False
+
+                if not report_file.exists():
+                    logger.error(f"❌ Arquivo de relatório '{report_file}' não encontrado.")
+                    return False
+
+                # 1. Clean the output directory to ensure a fresh start
+#                logger.info(f"🧹 Limpando pasta de saída: {videos_joined_path}")
+#                for item in videos_joined_path.iterdir():
+#                    if item.is_dir():
+#                        shutil.rmtree(item)
+#                    else:
+#                        item.unlink()
+
+                # 2. Read the report to get the list of all source videos
+                df = pd.read_csv(report_file)
+                final_files_to_copy = []
+                # Listar colunas disponíveis
+                #print("Colunas disponíveis:", df.columns.tolist())
+                # 3. Determine the definitive final file for each source video
+                for index, row in df.iterrows():
+                    original_path = Path(row['path_file'])
+                    original_name = original_path.name
+
+                    # Priority 1: Check for split parts
+                    split_parts = sorted(list(videos_splitted_path.glob(f"{original_path.stem}_part*.mp4")))
+                    if split_parts:
+                        logger.info(f"  -> Encontradas {len(split_parts)} partes divididas para '{original_name}'")
+                        final_files_to_copy.extend(split_parts)
+                        continue
+
+                    # Priority 2: Check for a re-encoded version (busca por nome normalizado)
+                    encoded_candidates = list(videos_encoded_path.glob(f"*{original_path.stem}*.mp4"))
+                    if encoded_candidates:
+                        logger.info(f"  -> Encontrada versão recodificada para '{original_name}': {encoded_candidates[0].name}")
+                        final_files_to_copy.append(encoded_candidates[0])
+                        continue
+
+                    # Priority 3: Use the original file (deve estar na pasta de origem)
+                    original_candidate = self.source_folder / original_name
+                    if original_candidate.exists():
+                        logger.info(f"  -> Usando arquivo original para '{original_name}'")
+                        final_files_to_copy.append(original_candidate)
+                    else:
+                        logger.warning(f"  -> Arquivo original não encontrado para '{original_name}'")
+
+                # 4. Copy the definitive files to the output directory
+                logger.info(f"📥 Copiando {len(final_files_to_copy)} arquivos finais para '{videos_joined_path}'")
+                for source_path in final_files_to_copy:
+                    if source_path.exists():
+                        dest_path = videos_joined_path / source_path.name
+                        shutil.copy2(source_path, dest_path)
+                        logger.info(f"    -> Copiado: {source_path.name}")
+                    else:
+                        logger.warning(f"    -> ⚠️ Arquivo de origem não encontrado, pulando: {source_path}")
+
+                logger.info("✅ Finalização do modo 'single' concluída.")
+
+            logger.info(f"✅ Etapa de junção/finalização concluída com sucesso")
+            logger.info(f"📁 Arquivos finais prontos em: {videos_joined_path}")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erro durante junção de arquivos: {e}")
+            logger.exception(f"❌ Erro durante a etapa de junção/finalização: {e}")
             return False
     
     async def _step_timestamp(self) -> bool:
         """
         Step 5: Add timestamps to files.
         
-        This step creates descriptions.xlsx and summary.txt files with
+        This step creates descriptions.csv and summary.txt files with
         timestamps and metadata for the project.
         
         Returns:
             bool: True if successful, False otherwise.
         """
         try:
+            import pandas as pd
+            from collections import defaultdict
             logger.info(f"⏰ Iniciando geração de timestamps para: {self.source_folder}")
             
             # Get configuration parameters
@@ -413,8 +461,13 @@ class PublishPipeline:
             }
             
             # Define paths
-            report_file = self.project_process_path / "video_details.xlsx"
-            
+            report_file = self.project_process_path / "video_details.csv"
+            df_report = pd.read_csv(report_file)
+            # Cria um dicionário: stem do arquivo original -> nome original sem extensão
+            video_name_map = {
+               Path(row['path_file']).stem: Path(row['path_file']).name
+               for _, row in df_report.iterrows()
+            }
             logger.info(f"📋 Arquivo de relatório: {report_file}")
             logger.info(f"📊 Configuração: hashtag_index={hashtag_index}, start_index={start_index}")
             
@@ -423,14 +476,14 @@ class PublishPipeline:
             
             # Create summary file
             summary_file = self.project_process_path / "summary.txt"
-            descriptions_file = self.project_process_path / "descriptions.xlsx"
+            descriptions_file = self.project_process_path / "descriptions.csv"
             upload_plan_file = self.project_process_path / "upload_plan.csv"
             
             # Create upload plan including both ZIP files (first) and videos (second)
             files_to_upload = []
             
-            # Add ZIP files (documents) FIRST with enumerated tags
-            zip_files = list(self.project_output_path.glob("*.zip*"))
+            # Add ZIP files (documents) FIRST with enumerated tags, sorted by name
+            zip_files = sorted(list(self.project_output_path.rglob("*.zip*")))
             if zip_files:
                 logger.info(f"📋 Encontrados {len(zip_files)} arquivos ZIP para upload")
                 for i, zip_file in enumerate(zip_files, start=1):
@@ -443,72 +496,122 @@ class PublishPipeline:
                         'order': i  # ZIP files come first
                     })
             
-            # Add output videos SECOND
-            output_videos = list(self.project_output_path.glob("*.mp4"))
-            if output_videos:
-                logger.info(f"📋 Encontrados {len(output_videos)} vídeos para upload")
-                for i, video_file in enumerate(output_videos, start=start_index):
-                    # Caption: hashtag do índice (3 dígitos) + nome do vídeo (com extensão)
-                    if hashtag_index and hashtag_index.strip() and hashtag_index.lower() != "false":
-                        description = f"#{hashtag_index}{i:03d} {video_file.name}"
-                    else:
-                        description = f"#{i:03d} {video_file.name}"
-                    files_to_upload.append({
-                        'file_output': str(video_file),
-                        'description': description,
-                        'type': 'video',
-                        'order': len(zip_files) + i  # Videos come after ZIPs
-                    })
+            # Add output videos SECOND, in the correct order
             
+            # 1. Get all video files from output path
+            all_output_videos = []
+            for ext in ["*.mp4", "*.mkv", "*.avi", "*.mov"]:
+                all_output_videos.extend(self.project_output_path.rglob(ext))
+
+            # 2. Map original stem to list of final video files
+            stem_to_file_map = defaultdict(list)
+            for video_file in all_output_videos:
+                stem = video_file.stem
+                original_stem = stem
+                if original_stem.startswith("reencode_"):
+                    original_stem = original_stem[len("reencode_"):]
+                if "_part" in original_stem:
+                    original_stem = original_stem.split("_part")[0]
+                stem_to_file_map[original_stem].append(video_file)
+
+            # Sort parts for each stem
+            for stem in stem_to_file_map:
+                stem_to_file_map[stem].sort()
+
+            # 3. Build the ordered list of video files based on the report
+            ordered_video_files = []
+            for index, row in df_report.iterrows():
+                original_stem = Path(row['path_file']).stem
+                if original_stem in stem_to_file_map:
+                    ordered_video_files.extend(stem_to_file_map[original_stem])
+                    del stem_to_file_map[original_stem]
+
+            # 4. Add any remaining video files not found in the report at the end, sorted
+            remaining_stems = sorted(stem_to_file_map.keys())
+            for stem in remaining_stems:
+                ordered_video_files.extend(stem_to_file_map[stem])
+
+            # 5. Iterate through the correctly ordered list of videos to build the upload plan and summary
+            video_counter = start_index
+            video_structure = []
+            last_folder_parts = None
+            current_folder_hashtags = []
+
+            for video_file in ordered_video_files:
+                rel_folder_path = video_file.parent.relative_to(self.project_output_path)
+                folder_parts = rel_folder_path.parts
+
+                if folder_parts != last_folder_parts:
+                    if last_folder_parts is not None:
+                        video_structure.append((last_folder_parts, current_folder_hashtags))
+                    current_folder_hashtags = []
+                    last_folder_parts = folder_parts
+
+                stem = video_file.stem
+                if stem.startswith("reencode_"):
+                     stem = stem[len("reencode_"):]
+                if "_part" in stem:
+                    stem = stem.split("_part")[0]
+                original_name = video_name_map.get(stem, stem)
+
+                if hashtag_index and hashtag_index.strip() and hashtag_index.lower() != "false":
+                    hashtag = f"#{hashtag_index}{video_counter:03d}"
+                else:
+                    hashtag = f"#{video_counter:03d}"
+
+                folder_hierarchy = ""
+                if folder_parts:
+                    for i, part in enumerate(folder_parts):
+                        prefix = "=" * i if i > 0 else ""
+                        folder_hierarchy += f"{prefix}{part}\n"
+
+                description = f"{hashtag} {original_name}"
+                if folder_hierarchy:
+                    description += f"\n\n{folder_hierarchy.strip()}"
+                
+                files_to_upload.append({
+                    'file_output': str(video_file),
+                    'description': description,
+                    'type': 'video',
+                    'order': len(zip_files) + video_counter
+                })
+                current_folder_hashtags.append(hashtag)
+                video_counter += 1
+            
+            if last_folder_parts is not None:
+                video_structure.append((last_folder_parts, current_folder_hashtags))
+
             # Write upload plan (ZIPs first, then videos)
             if files_to_upload:
                 logger.info(f"📋 Criando plano de upload com {len(files_to_upload)} arquivos")
-                
                 with open(upload_plan_file, 'w', newline='', encoding='utf-8') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['file_output', 'description'])
-                    
-                    # Sort by order to ensure ZIPs come first
                     files_to_upload.sort(key=lambda x: x['order'])
-                    
                     for file_info in files_to_upload:
                         writer.writerow([file_info['file_output'], file_info['description']])
-                
                 logger.info(f"✅ Plano de upload criado: {upload_plan_file}")
+                input("Valide o plano de upload e pressione Enter para continuar...")
             else:
                 logger.warning("⚠️ Nenhum arquivo encontrado para upload")
             
-            # Create summary with folder structure and video links
+            # Create summary with folder structure and video links (corrigido para múltiplos níveis)
             summary_content = "⚠️ Clique aqui para ver o sumário! ⚠️\n\n"
             summary_content += "Siga o contéudo do mapa:\n\n\n"
-            
             # Add documents section
             if zip_files:
                 summary_content += f"{document_title}\n"
                 for i, zip_file in enumerate(zip_files, start=1):
                     summary_content += f"#{document_hashtag}{i:03d}\n"
                 summary_content += "\n"
-            
-            # Add video structure with folder hierarchy
-            if output_videos:
-                # Get folder structure from source folder
-                source_path = Path(self.source_folder)
-                folder_name = source_path.name
-                
-                summary_content += f"= {folder_name}\n"
-                summary_content += "== 1.Introducao\n"
-                
-                # Add video hashtags
-                video_hashtags = []
-                for i, video_file in enumerate(output_videos, start=start_index):
-                    if hashtag_index and hashtag_index.strip() and hashtag_index.lower() != "false":
-                        # Use the hashtag_index value from config (e.g., "F", "Block")
-                        video_hashtags.append(f"#{hashtag_index}{i:03d}")
-                    else:
-                        video_hashtags.append(f"#{i:03d}")
-                
-                summary_content += " ".join(video_hashtags) + "\n"
-            
+            # Add video structure com subpastas aninhadas
+            if video_structure:
+                summary_content += f"= {self.source_folder.name}\n"
+                for folder_parts, hashtags in video_structure:
+                    if folder_parts:
+                        level = len(folder_parts)
+                        summary_content += f"{'=' * (level+1)} {'/'.join(folder_parts)}\n"
+                    summary_content += " ".join(hashtags) + "\n"
             with open(summary_file, 'w', encoding='utf-8') as f:
                 f.write(summary_content)
             

@@ -471,6 +471,26 @@ def get_publish_task(source_folder: str) -> Optional[Dict[str, Any]]:
         conn.close()
 
 
+def get_or_create_publish_task(source_folder: str, project_name: str) -> Dict[str, Any]:
+    """
+    Get an existing publish task or create a new one if it doesn't exist.
+    
+    Args:
+        source_folder: The absolute path to the source folder.
+        project_name: The name of the project.
+        
+    Returns:
+        Dict[str, Any]: The existing or newly created task data.
+    """
+    task = get_publish_task(source_folder)
+    if task:
+        logger.info(f"Found existing publish task for {source_folder}")
+        return task
+    
+    logger.info(f"No existing task found. Creating a new one for {source_folder}")
+    return create_publish_task(source_folder, project_name)
+
+
 def update_publish_task_step(source_folder: str, step_flag: str, status: bool) -> None:
     """
     Update a specific step flag for a publish task.

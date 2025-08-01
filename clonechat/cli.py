@@ -12,7 +12,7 @@ from pyrogram.raw.functions.channels import GetFullChannel, GetForumTopics
 
 from .config import load_config, Config
 
-from .database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress, get_publish_task, create_publish_task, delete_publish_task
+from .database import init_db, get_task, create_task, update_strategy, update_progress, get_download_task, delete_download_task, create_download_task, update_download_progress, get_publish_task, get_or_create_publish_task, delete_publish_task
 from .engine import ClonerEngine
 from .logging_config import setup_logging, get_logger, log_operation_start, log_operation_success, log_operation_error
 from .tasks import PublishPipeline
@@ -626,13 +626,15 @@ def download(
     asyncio.run(download_videos())
 
 
-async def run_publish_async(folder_path: str, restart: bool = False) -> None:
+async def run_publish_async(folder_path: str, restart: bool = False, publish_to: Optional[str] = None, topic_id: Optional[int] = None) -> None:
     """
     Async wrapper for the publish operation.
     
     Args:
         folder_path: Path to the folder to publish.
         restart: Whether to restart the publish task (delete existing task).
+        publish_to: ID, username or link of the group/channel to publish the link of the published channel.
+        topic_id: ID of the topic (for groups with topic enabled).
     """
     try:
         log_operation_start(logger, "run_publish_async", folder_path=folder_path, restart=restart)
@@ -672,14 +674,12 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
         logger.info(f"📁 Pasta de origem: {absolute_folder_path}")
         logger.info(f"📋 Nome do projeto: {project_name}")
         
-        # Verificar tarefa existente
-        existing_task = get_publish_task(absolute_folder_path)
-        
-        if restart and existing_task:
-            logger.info(f"🔄 Modo restart: apagando tarefa existente para {absolute_folder_path}")
+        # Handle restart logic
+        if restart:
+            logger.info(f"🔄 Modo restart: apagando tarefa e arquivos existentes para {absolute_folder_path}")
             delete_publish_task(absolute_folder_path)
             
-            # Limpar arquivos gerados pelo pipeline
+            # Clean up generated files
             project_workspace_path = Path("data/project_workspace") / project_name
             if project_workspace_path.exists():
                 logger.info(f"🗑️ Limpando arquivos gerados em: {project_workspace_path}")
@@ -689,28 +689,10 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
                     logger.info("✅ Arquivos gerados removidos com sucesso")
                 except Exception as e:
                     logger.warning(f"⚠️ Erro ao limpar arquivos: {e}")
-            
-            existing_task = None
-        else:
-            logger.info("📋 Criando nova tarefa de publicação")
-            # Criar nova tarefa
-            task_data = create_publish_task(absolute_folder_path, project_name)
-            logger.info(f"✅ Nova tarefa criada: {task_data}")
         
-        if existing_task:
-            logger.info(f"📋 Tarefa de publicação existente encontrada:")
-            logger.info(f"   - Status: {existing_task['status']}")
-            logger.info(f"   - Etapa atual: {existing_task['current_step']}")
-            logger.info(f"   - Último arquivo: {existing_task['last_uploaded_file']}")
-            logger.info(f"   - Chat de destino: {existing_task['destination_chat_id']}")
-            
-            # Usar tarefa existente
-            task_data = existing_task
-        else:
-            logger.info("📋 Criando nova tarefa de publicação")
-            # Criar nova tarefa
-            task_data = create_publish_task(absolute_folder_path, project_name)
-            logger.info(f"✅ Nova tarefa criada: {task_data}")
+        # Get or create the publish task
+        task_data = get_or_create_publish_task(absolute_folder_path, project_name)
+        logger.info(f"✅ Tarefa de publicação pronta: {task_data}")
         
         # Executar pipeline
         logger.info("🚀 Iniciando pipeline de publicação")
@@ -720,6 +702,35 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
         
         if success:
             logger.info("✅ Pipeline de publicação concluído com sucesso!")
+
+            # Publicar link do canal publicado
+            if publish_to:
+                dest_chat_id = await resolve_chat_id(client, publish_to)
+                logger.info(f"📤 Publicando link do canal publicado para {publish_to} (ID: {dest_chat_id})")
+
+                # Gerar link de convite do canal publicado, se possível
+                try:
+                    # Supondo que o pipeline cria um canal/clonagem e salva o ID em task_data
+                    # Se não houver, apenas publica o nome do projeto
+                    canal_nome = project_name
+                    canal_link = None
+                    if hasattr(pipeline, 'dest_chat_id'):
+                        canal_id = getattr(pipeline, 'dest_chat_id')
+                        try:
+                            canal_link = await client.export_chat_invite_link(canal_id)
+                        except Exception:
+                            canal_link = None
+                    mensagem = f"🎉 Canal publicado: {canal_nome}"
+                    if canal_link:
+                        mensagem += f"\n🔗 Link: {canal_link}"
+                except Exception:
+                    mensagem = f"🎉 Canal publicado: {project_name}"
+
+                send_kwargs = {"chat_id": dest_chat_id, "text": mensagem}
+                if topic_id is not None:
+                    send_kwargs["message_thread_id"] = topic_id
+                await client.send_message(**send_kwargs)
+            
         else:
             logger.error("❌ Pipeline de publicação falhou")
             raise typer.Exit(1)
@@ -735,7 +746,19 @@ async def run_publish_async(folder_path: str, restart: bool = False) -> None:
 @app.command()
 def publish(
     folder_path: str = typer.Option(..., "--folder", "-f", help="Caminho para a pasta a ser publicada"),
-    restart: bool = typer.Option(False, "--restart", "-r", help="Forçar nova publicação do zero (apaga dados anteriores)")
+    restart: bool = typer.Option(False, "--restart", "-r", help="Forçar nova publicação do zero (apaga dados anteriores)"),
+    publish_to: Optional[str] = typer.Option(
+        None,
+        "--publish-to",
+        "-p",
+        help="ID, username ou link do grupo/canal onde publicar o link do canal publicado"
+    ),
+    topic_id: Optional[int] = typer.Option(
+        None,
+        "--topic",
+        "-t",
+        help="ID do tópico (para grupos com tópicos habilitados)"
+    )
 ):
     """
     Publica uma pasta local no Telegram usando o pipeline Zimatise.
@@ -755,8 +778,9 @@ def publish(
     Exemplos:
     - python main.py publish --folder C:/meus_projetos/curso_python
     - python main.py publish --folder C:/meus_projetos/curso_python --restart
+    - python main.py publish --folder C:/meus_projetos/curso_python --publish-to -1001234567890 --topic 123
     """
-    asyncio.run(run_publish_async(folder_path, restart))
+    asyncio.run(run_publish_async(folder_path, restart, publish_to, topic_id))
 
 
 @app.command()
