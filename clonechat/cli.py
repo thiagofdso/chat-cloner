@@ -111,6 +111,47 @@ async def resolve_chat_id(client: Client, chat_identifier: str) -> int:
         raise ValueError(f"Cannot resolve chat identifier '{chat_identifier}': {e}")
 
 
+async def validate_batch_chats(client: Client, chat_ids: list[int]) -> tuple[list[int], list[int]]:
+    """
+    Validate batch chat IDs before processing.
+    
+    Args:
+        client: Pyrogram client instance.
+        chat_ids: List of chat IDs to validate.
+        
+    Returns:
+        Tuple of (valid_chat_ids, invalid_chat_ids).
+    """
+    valid_chats = []
+    invalid_chats = []
+    
+    logger.info(f"🔍 Validando {len(chat_ids)} chats antes do processamento...")
+    
+    for i, chat_id in enumerate(chat_ids, 1):
+        try:
+            logger.info(f"🔍 Validando chat {i}/{len(chat_ids)}: {chat_id}")
+            
+            # Resolver ID do chat
+            resolved_id = await resolve_chat_id(client, str(chat_id))
+            
+            # Testar acesso ao chat
+            chat = await client.get_chat(resolved_id)
+            
+            logger.info(f"✅ Chat válido: {chat.title} (ID: {chat.id}, Tipo: {getattr(chat, 'type', 'unknown')})")
+            valid_chats.append(chat_id)
+            
+        except Exception as e:
+            logger.error(f"❌ Chat inválido {chat_id}: {e}")
+            invalid_chats.append(chat_id)
+    
+    logger.info(f"📊 Validação concluída: {len(valid_chats)} válidos, {len(invalid_chats)} inválidos")
+    
+    if invalid_chats:
+        logger.warning(f"⚠️ Chats inválidos que serão ignorados: {invalid_chats}")
+    
+    return valid_chats, invalid_chats
+
+
 async def run_sync_async(
     origin: Optional[str],
     batch: bool,
@@ -156,6 +197,12 @@ async def run_sync_async(
         await client.start()
         me = await client.get_me()
         logger.info(f"🤖 Logged in as: {me.first_name} (ID: {me.id})")
+
+        # Atualizar cache de chats (semelhante a list-chats)
+        logger.info("🔄 Atualizando cache de chats...")
+        async for _ in client.get_dialogs():
+            pass
+        logger.info("✅ Cache de chats atualizado.")
         
         # Inicializar banco de dados
         init_db()
@@ -179,16 +226,34 @@ async def run_sync_async(
             logger.info(f"📦 Iniciando processamento em lote do arquivo: {source}")
             chat_ids = read_chat_ids_from_file(source)  # type: ignore
             
+            # Validar chats antes do processamento
+            valid_chat_ids, invalid_chat_ids = await validate_batch_chats(client, chat_ids)
+            
+            if not valid_chat_ids:
+                logger.error("❌ Nenhum chat válido encontrado no arquivo batch")
+                raise typer.Exit(1)
+            
+            if invalid_chat_ids:
+                logger.warning(f"⚠️ {len(invalid_chat_ids)} chats inválidos serão ignorados")
+            
+            logger.info(f"🚀 Iniciando processamento de {len(valid_chat_ids)} chats válidos")
+            
             successful = 0
             failed = 0
             
-            for chat_id in chat_ids:
+            for chat_id in valid_chat_ids:
                 if await process_single_chat(engine, chat_id, restart):
                     successful += 1
                 else:
                     failed += 1
             
             logger.info(f"📊 Processamento em lote concluído: {successful} sucessos, {failed} falhas")
+            
+            if invalid_chat_ids:
+                logger.info(f"📋 Resumo final:")
+                logger.info(f"   ✅ Chats processados: {len(valid_chat_ids)}")
+                logger.info(f"   ❌ Chats ignorados (inválidos): {len(invalid_chat_ids)}")
+                logger.info(f"   🎯 Taxa de sucesso: {successful}/{len(valid_chat_ids)}")
             
             if failed > 0:
                 raise typer.Exit(1)
@@ -421,22 +486,34 @@ def download(
     origin: str = typer.Option(..., "--origin", "-o", help="ID, username ou link do canal de origem"),
     limit: Optional[int] = typer.Option(None, "--limit", "-l", help="Limite de vídeos para baixar (padrão: todos)"),
     output_dir: Optional[str] = typer.Option(None, "--output", "-d", help="Diretório de saída (padrão: ./downloads/)"),
-    restart: bool = typer.Option(False, "--restart", "-r", help="Forçar novo download do zero (apaga dados anteriores)")
+    restart: bool = typer.Option(False, "--restart", "-r", help="Forçar novo download do zero (apaga dados anteriores)"),
+    delete_video: bool = typer.Option(False, "--delete-video", help="Deletar arquivo de vídeo após extrair áudio"),
+    message_id: Optional[int] = typer.Option(None, "--message-id", help="ID da mensagem para continuar o download a partir deste ponto")
 ):
     """
     Baixa todos os vídeos de um canal e extrai os áudios.
-    
+
     O sistema verifica automaticamente se já existe uma tarefa de download
     para este canal e resume de onde parou. Use --restart para forçar
     um novo download do zero.
-    
+
+    Por padrão, o sistema mantém tanto os vídeos originais quanto os áudios
+    extraídos. Use --delete-video para economizar espaço em disco,
+    removendo os arquivos de vídeo após a extração do áudio.
+
+    Use --message-id para continuar o download a partir de uma mensagem
+    específica, útil para pular conteúdo já baixado ou começar de um ponto
+    específico no histórico do canal.
+
     Exemplos:
     - python main.py download --origin -1002859374479
     - python main.py download --origin -1002859374479 --limit 10
     - python main.py download --origin -1002859374479 --output ./meus_videos/
     - python main.py download --origin -1002859374479 --restart
+    - python main.py download --origin -1002859374479 --delete-video
+    - python main.py download --origin -1002859374479 --message-id 12345
     """
-    async def download_videos():
+    async def download_videos(delete_video_files: bool = delete_video, start_message_id: Optional[int] = message_id):
         try:
             # Carregar configurações
             config = load_config()
@@ -474,7 +551,12 @@ def download(
                 delete_download_task(origin_chat_id)
                 existing_task = None
             
-            if existing_task:
+            # Determinar ponto de início baseado em prioridade: message_id > existing_task > 0
+            if start_message_id is not None:
+                logger.info(f"🎯 Iniciando download a partir da mensagem especificada: {start_message_id}")
+                last_message_id = start_message_id
+                downloaded_count = 0  # Reset contador quando especifica message_id
+            elif existing_task:
                 logger.info(f"📋 Tarefa de download existente encontrada:")
                 logger.info(f"   - Última mensagem processada: {existing_task['last_downloaded_message_id']}")
                 logger.info(f"   - Vídeos baixados: {existing_task['downloaded_videos']}")
@@ -521,68 +603,92 @@ def download(
             # Baixar vídeos
             failed_count = 0
             processed_messages = set()
-            
+
+            # Coletar todas as mensagens com vídeo primeiro para inverter a ordem
+            video_messages = []
             async for message in client.get_chat_history(origin_chat_id):
                 if message.video:
-                    # Pular mensagens já processadas
-                    if message.id <= last_message_id:
-                        continue
-                    
-                    # Verificar limite
-                    if limit and downloaded_count >= limit:
-                        logger.info(f"✅ Limite atingido: {limit} vídeos baixados")
-                        break
-                    
-                    try:
-                        # Nome do arquivo baseado na data e ID da mensagem
+                    video_messages.append(message)
+
+            # Processar na ordem cronológica (inverter a lista)
+            video_messages.reverse()
+
+            for message in video_messages:
+                # Pular mensagens já processadas
+                if message.id <= last_message_id:
+                    continue
+
+                # Verificar limite
+                if limit and downloaded_count >= limit:
+                    logger.info(f"✅ Limite atingido: {limit} vídeos baixados")
+                    break
+
+                try:
+                    # Nome do arquivo baseado no caption ou fallback para data/ID
+                    if message.caption and message.caption.strip():
+                        # Limpar caption para uso como nome de arquivo
+                        import re
+                        # Remover quebras de linha e caracteres de controle
+                        clean_caption = re.sub(r'[\r\n\t\f\v]+', ' ', message.caption.strip())
+                        # Remover caracteres inválidos do Windows
+                        safe_caption = re.sub(r'[<>:"/\\|?*]', '_', clean_caption)
+                        # Remover espaços múltiplos e limitar tamanho
+                        safe_caption = re.sub(r'\s+', ' ', safe_caption).strip()[:100]
+                        video_filename = f"{safe_caption}_{message.id}_video.mp4"
+                        audio_filename = f"{safe_caption}_{message.id}_audio.mp3"
+                    else:
+                        # Fallback para data e ID se não houver caption
                         date_str = message.date.strftime("%Y%m%d_%H%M%S")
                         video_filename = f"{date_str}_{message.id}_video.mp4"
                         audio_filename = f"{date_str}_{message.id}_audio.mp3"
+
+                    video_path = download_path / video_filename
+                    audio_path = download_path / audio_filename
+
+                    logger.info(f"📥 Baixando vídeo {downloaded_count + 1}/{video_count}: {video_filename}")
+
+                    # Baixar vídeo
+                    await client.download_media(
+                        message.video,
+                        file_name=str(video_path)
+                    )
+
+                    # Extrair áudio
+                    logger.info(f"🎵 Extraindo áudio: {audio_filename}")
+                    try:
+                        import subprocess
+                        result = subprocess.run([
+                            "ffmpeg", "-i", str(video_path), 
+                            "-vn", "-acodec", "mp3", 
+                            "-ab", "192k", str(audio_path),
+                            "-y"  # Sobrescrever se existir
+                        ], capture_output=True, text=True, check=True)
+                            
+                        logger.info(f"✅ Áudio extraído: {audio_filename}")
+                            
+                        # Verificar se os arquivos existem
+                        if video_path.exists():
+                            logger.info(f"✅ Vídeo salvo: {video_path} ({video_path.stat().st_size} bytes)")
+                        else:
+                            logger.warning(f"⚠️ Vídeo não encontrado: {video_path}")
                         
-                        video_path = download_path / video_filename
-                        audio_path = download_path / audio_filename
-                        
-                        logger.info(f"📥 Baixando vídeo {downloaded_count + 1}/{video_count}: {video_filename}")
-                        
-                        # Baixar vídeo
-                        await client.download_media(
-                            message.video,
-                            file_name=str(video_path)
-                        )
-                        
-                        # Extrair áudio
-                        logger.info(f"🎵 Extraindo áudio: {audio_filename}")
-                        try:
-                            import subprocess
-                            result = subprocess.run([
-                                "ffmpeg", "-i", str(video_path), 
-                                "-vn", "-acodec", "mp3", 
-                                "-ab", "192k", str(audio_path),
-                                "-y"  # Sobrescrever se existir
-                            ], capture_output=True, text=True, check=True)
+                        if audio_path.exists():
+                            logger.info(f"✅ Áudio salvo: {audio_path} ({audio_path.stat().st_size} bytes)")
+                        else:
+                            logger.warning(f"⚠️ Áudio não encontrado: {audio_path}")
                             
-                            logger.info(f"✅ Áudio extraído: {audio_filename}")
+                        # Remover vídeo original se delete_video_files for True
+                        if delete_video_files:
+                            video_path.unlink()
+                            logger.info(f"🗑️ Vídeo original removido: {video_filename}")
+                        else:
+                            logger.info(f"💾 Vídeo original mantido: {video_filename}")
                             
-                            # Verificar se os arquivos existem
-                            if video_path.exists():
-                                logger.info(f"✅ Vídeo salvo: {video_path} ({video_path.stat().st_size} bytes)")
-                            else:
-                                logger.warning(f"⚠️ Vídeo não encontrado: {video_path}")
-                            
-                            if audio_path.exists():
-                                logger.info(f"✅ Áudio salvo: {audio_path} ({audio_path.stat().st_size} bytes)")
-                            else:
-                                logger.warning(f"⚠️ Áudio não encontrado: {audio_path}")
-                            
-                            # NÃO remover vídeo original - manter ambos
-                            # video_path.unlink()
-                            # logger.info(f"🗑️ Vídeo original removido: {video_filename}")
-                            
-                        except subprocess.CalledProcessError as e:
-                            logger.error(f"❌ Erro ao extrair áudio: {e}")
-                            logger.error(f"FFmpeg stderr: {e.stderr}")
-                        except FileNotFoundError:
-                            logger.error("❌ FFmpeg não encontrado. Instale o FFmpeg e adicione ao PATH.")
+                    except subprocess.CalledProcessError as e:
+                        logger.error(f"❌ Erro ao extrair áudio: {e}")
+                        logger.error(f"FFmpeg stderr: {e.stderr}")
+                    except FileNotFoundError:
+                        logger.error("❌ FFmpeg não encontrado. Instale o FFmpeg e adicione ao PATH.")
                         
                         downloaded_count += 1
                         processed_messages.add(message.id)
@@ -593,10 +699,10 @@ def download(
                         # Delay para evitar flood
                         await asyncio.sleep(1)
                         
-                    except Exception as e:
-                        logger.error(f"❌ Erro ao baixar vídeo {message.id}: {e}")
-                        failed_count += 1
-                        continue
+                except Exception as e:
+                    logger.error(f"❌ Erro ao baixar vídeo {message.id}: {e}")
+                    failed_count += 1
+                    continue
             
             logger.info(f"🎉 Download concluído!")
             logger.info(f"✅ Vídeos baixados: {downloaded_count}")

@@ -8,6 +8,7 @@ poetry.lock
 
 # Database
 data/clonechat.db
+*db-journal
 
 # Downloads
 data/downloads/
@@ -69,6 +70,7 @@ venv.bak/
 # Logs
 *.log
 logs/
+error.txt
 
 # OS
 .DS_Store
