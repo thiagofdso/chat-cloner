@@ -692,16 +692,16 @@ def download(
                         logger.error(f"FFmpeg stderr: {e.stderr}")
                     except FileNotFoundError:
                         logger.error("❌ FFmpeg não encontrado. Instale o FFmpeg e adicione ao PATH.")
-                        
-                        downloaded_count += 1
-                        processed_messages.add(message.id)
-                        
-                        # Atualizar progresso no banco
-                        update_download_progress(origin_chat_id, message.id, downloaded_count)
-                        
-                        # Delay para evitar flood
-                        await asyncio.sleep(1)
-                        
+
+                    downloaded_count += 1
+                    processed_messages.add(message.id)
+
+                    # Atualizar progresso no banco
+                    update_download_progress(origin_chat_id, message.id, downloaded_count)
+
+                    # Delay para evitar flood
+                    await asyncio.sleep(1)
+
                 except Exception as e:
                     logger.error(f"❌ Erro ao baixar vídeo {message.id}: {e}")
                     failed_count += 1
