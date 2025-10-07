@@ -8,6 +8,7 @@ from pathlib import Path
 from pyrogram import Client, raw
 import toml
 import sqlite3
+import re
 from pyrogram.raw.functions.channels import GetFullChannel, GetForumTopics
 
 from .config import load_config, Config
@@ -573,8 +574,11 @@ def download(
             if output_dir:
                 download_path = Path(output_dir).resolve()
             else:
-                download_path = Path("./downloads/").resolve() / f"{chat.title}"
-            
+                # Sanitize chat title for use as a directory name
+                safe_title = re.sub(r'[<>:"/\\|?*]', '_', chat.title)
+                safe_title = re.sub(r'\s+', ' ', safe_title).strip()
+                download_path = Path(config.cloner_download_path).resolve() / f"{origin_chat_id} - {safe_title}"
+
             download_path.mkdir(parents=True, exist_ok=True)
             logger.info(f"📁 Diretório de saída: {download_path}")
             logger.info(f"📁 Caminho absoluto: {download_path.absolute()}")
@@ -627,7 +631,6 @@ def download(
                     # Nome do arquivo baseado no caption ou fallback para data/ID
                     if message.caption and message.caption.strip():
                         # Limpar caption para uso como nome de arquivo
-                        import re
                         # Remover quebras de linha e caracteres de controle
                         clean_caption = re.sub(r'[\r\n\t\f\v]+', ' ', message.caption.strip())
                         # Remover caracteres inválidos do Windows
