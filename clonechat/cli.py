@@ -515,6 +515,8 @@ def download(
     - python main.py download --origin -1002859374479 --message-id 12345
     """
     async def download_videos(delete_video_files: bool = delete_video, start_message_id: Optional[int] = message_id):
+        max_download_attempts = 3
+        retry_delay_seconds = 2
         try:
             # Carregar configurações
             config = load_config()
@@ -617,16 +619,27 @@ def download(
             # Processar na ordem cronológica (inverter a lista)
             video_messages.reverse()
 
-            for message in video_messages:
-                # Pular mensagens já processadas
-                if message.id <= last_message_id:
-                    continue
+            initial_download_count = downloaded_count
+            remaining_messages = [msg for msg in video_messages if msg.id > last_message_id]
 
-                # Verificar limite
+            if limit is not None:
+                remaining_quota = max(limit - downloaded_count, 0)
+                if remaining_quota == 0:
+                    logger.info(f"Limite ja atingido antes de iniciar o download (limit={limit}, ja baixados={downloaded_count}).")
+                    remaining_messages = []
+                else:
+                    remaining_messages = remaining_messages[:remaining_quota]
+
+            session_total_videos = len(remaining_messages)
+            if session_total_videos == 0:
+                logger.info("Nenhum video pendente para baixar com os parametros fornecidos.")
+            else:
+                logger.info(f"Videos pendentes nesta execucao: {session_total_videos}")
+
+            for message in remaining_messages:
                 if limit and downloaded_count >= limit:
-                    logger.info(f"✅ Limite atingido: {limit} vídeos baixados")
+                    logger.info(f"Limite atingido: {limit} videos baixados")
                     break
-
                 try:
                     # Nome do arquivo baseado no caption ou fallback para data/ID
                     if message.caption and message.caption.strip():
@@ -648,13 +661,44 @@ def download(
                     video_path = download_path / video_filename
                     audio_path = download_path / audio_filename
 
-                    logger.info(f"📥 Baixando vídeo {downloaded_count + 1}/{video_count}: {video_filename}")
+                    session_index = (downloaded_count - initial_download_count) + 1
+                    logger.info(f"Baixando video {session_index}/{session_total_videos}: {video_filename}")
 
-                    # Baixar vídeo
-                    await client.download_media(
-                        message.video,
-                        file_name=str(video_path)
-                    )
+                    # Baixar vídeo com retentativa quando o arquivo ficar vazio
+                    video_size = 0
+                    for attempt in range(1, max_download_attempts + 1):
+                        await client.download_media(
+                            message.video,
+                            file_name=str(video_path)
+                        )
+
+                        if video_path.exists():
+                            video_size = video_path.stat().st_size
+                        else:
+                            video_size = 0
+
+                        if video_size > 0:
+                            if attempt > 1:
+                                logger.info(f"Video baixado com sucesso na tentativa {attempt}.")
+                            break
+
+                        logger.warning(
+                            f"Video salvo com 0 bytes na tentativa {attempt}/{max_download_attempts}. Repetindo download..."
+                        )
+                        if video_path.exists():
+                            try:
+                                video_path.unlink()
+                            except OSError as cleanup_error:
+                                logger.warning(f"Nao foi possivel remover arquivo vazio: {cleanup_error}")
+                        if attempt < max_download_attempts:
+                            await asyncio.sleep(retry_delay_seconds)
+
+                    if video_size == 0:
+                        logger.error(
+                            f"Falha ao baixar video apos {max_download_attempts} tentativas; arquivo permaneceu com 0 bytes."
+                        )
+                        failed_count += 1
+                        continue
 
                     # Extrair áudio
                     logger.info(f"🎵 Extraindo áudio: {audio_filename}")
