@@ -380,12 +380,18 @@ class PublishPipeline:
 
                 # 2. Read the report to get the list of all source videos
                 df = pd.read_csv(report_file)
-                final_files_to_copy = []
+                final_files_to_copy: List[Path] = []
+                source_file_index: Optional[Dict[str, List[Path]]] = None
                 # Listar colunas disponíveis
                 #print("Colunas disponíveis:", df.columns.tolist())
                 # 3. Determine the definitive final file for each source video
                 for index, row in df.iterrows():
-                    original_path = Path(row['path_file'])
+                    path_value = str(row.get('path_file', '')).strip()
+                    if not path_value or path_value.lower() == 'nan':
+                        logger.warning(f"  -> Campo 'path_file' vazio no relatório para a linha {index}, pulando.")
+                        continue
+
+                    original_path = Path(path_value)
                     original_name = original_path.name
 
                     # Priority 1: Check for split parts
@@ -403,12 +409,37 @@ class PublishPipeline:
                         continue
 
                     # Priority 3: Use the original file (deve estar na pasta de origem)
-                    original_candidate = self.source_folder / original_name
-                    if original_candidate.exists():
-                        logger.info(f"  -> Usando arquivo original para '{original_name}'")
+                    candidate_paths = [
+                        original_path,
+                        self.source_folder / original_path,
+                        self.source_folder / original_name,
+                    ]
+
+                    original_candidate = next((candidate for candidate in candidate_paths if candidate.exists()), None)
+
+                    if original_candidate is None:
+                        if source_file_index is None:
+                            source_file_index = self._build_source_file_index()
+
+                        matches: List[Path] = []
+                        if source_file_index:
+                            matches = source_file_index.get(original_name.lower(), [])
+
+                        if matches:
+                            if len(matches) > 1:
+                                logger.warning(
+                                    f"  -> Encontrados {len(matches)} candidatos para '{original_name}'. Usando: {matches[0]}"
+                                )
+                            original_candidate = matches[0]
+
+                    if original_candidate and original_candidate.exists():
+                        logger.info(f"  -> Usando arquivo original para '{original_name}': {original_candidate}")
                         final_files_to_copy.append(original_candidate)
                     else:
-                        logger.warning(f"  -> Arquivo original não encontrado para '{original_name}'")
+                        checked_paths = ", ".join(str(p) for p in candidate_paths)
+                        logger.warning(
+                            f"  -> Arquivo original não encontrado para '{original_name}'. Caminhos verificados: {checked_paths}"
+                        )
 
                 # 4. Copy the definitive files to the output directory
                 logger.info(f"📥 Copiando {len(final_files_to_copy)} arquivos finais para '{videos_joined_path}'")
@@ -1155,6 +1186,27 @@ class PublishPipeline:
         except Exception as e:
             logger.error(f"❌ Failed to get invite link for channel {chat_id}: {e}")
             return "Link não disponível"
-    
+
+    def _build_source_file_index(self) -> Dict[str, List[Path]]:
+        """
+        Index all files inside the source folder by filename (case-insensitive).
+
+        Returns:
+            Dict[str, List[Path]]: Mapping of file name to list of matching paths.
+        """
+        file_index: Dict[str, List[Path]] = {}
+
+        if not self.source_folder.exists():
+            return file_index
+
+        try:
+            for path in self.source_folder.rglob("*"):
+                if path.is_file():
+                    file_index.setdefault(path.name.lower(), []).append(path)
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao indexar arquivos da pasta de origem: {e}")
+
+        return file_index
+
     # Placeholder methods for future phases
     # Note: These methods are now implemented above 

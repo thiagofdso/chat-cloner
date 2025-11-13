@@ -1,0 +1,497 @@
+poetry run python  main.py publish -r -f "C:\Comunidade_Lendaria_Novembro_2025"
+2025-11-13 15:17:05 - clonechat.cli - [32mINFO[0m - log_operation_start:124 - 🚀 Starting run_publish_async - folder_path=C:\Comunidade_Lendaria_Novembro_2025, restart=True
+2025-11-13 15:17:05 - clonechat.config - [32mINFO[0m - log_operation_start:124 - 🚀 Starting load_config - 
+2025-11-13 15:17:05 - clonechat.config - [32mINFO[0m - log_configuration:185 - ⚙️ Configuration loaded: telegram_api_id=***, telegram_api_hash=ebc4...c568, cloner_delay_seconds=2, cloner_download_path=./data/downloads/
+2025-11-13 15:17:05 - clonechat.config - [32mINFO[0m - log_operation_success:130 - ✅ Completed load_config - 
+2025-11-13 15:17:05 - clonechat.cli - [32mINFO[0m - run_publish_async:797 - ⚙️ Configurações carregadas com sucesso
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:809 - 🤖 Logged in as: Thiago (ID: 6809218853)
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting init_db - 
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed init_db - 
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:813 - 💾 Banco de dados inicializado
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:827 - 📁 Pasta de origem: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:828 - 📋 Nome do projeto: Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:832 - 🔄 Modo restart: apagando tarefa e arquivos existentes para C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting delete_publish_task - source_folder=C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.database - [31mERROR[0m - log_operation_error:136 - ❌ Error in delete_publish_task - source_folder=C:\Comunidade_Lendaria_Novembro_2025 - No task found
+2025-11-13 15:17:07 - clonechat.database - [33mWARNING[0m - delete_publish_task:630 - ⚠️ No publish task found for source_folder=C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - get_or_create_publish_task:490 - No existing task found. Creating a new one for C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting create_publish_task - source_folder=C:\Comunidade_Lendaria_Novembro_2025, project_name=Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed create_publish_task - source_folder=C:\Comunidade_Lendaria_Novembro_2025, project_name=Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:848 - ✅ Tarefa de publicação pronta: {'source_folder_path': 'C:\\Comunidade_Lendaria_Novembro_2025', 'project_name': 'Comunidade_Lendaria_Novembro_2025', 'destination_chat_id': None, 'current_step': None, 'status': 'pending', 'is_started': 0, 'is_zipped': 0, 'is_reported': 0, 'is_reencode_auth': 0, 'is_reencoded': 0, 'is_joined': 0, 'is_timestamped': 0, 'is_upload_auth': 0, 'is_published': 0, 'last_uploaded_file': None, 'created_at': '2025-11-13 18:17:07', 'updated_at': '2025-11-13 18:17:07'}
+2025-11-13 15:17:07 - clonechat.cli - [32mINFO[0m - run_publish_async:851 - 🚀 Iniciando pipeline de publicação
+2025-11-13 15:17:07 - clonechat.config - [32mINFO[0m - log_operation_start:124 - 🚀 Starting load_config - 
+2025-11-13 15:17:07 - clonechat.config - [32mINFO[0m - log_configuration:185 - ⚙️ Configuration loaded: telegram_api_id=***, telegram_api_hash=ebc4...c568, cloner_delay_seconds=2, cloner_download_path=./data/downloads/
+2025-11-13 15:17:07 - clonechat.config - [32mINFO[0m - log_operation_success:130 - ✅ Completed load_config - 
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - __init__:53 - 🚀 PublishPipeline inicializado para: Comunidade_Lendaria_Novembro_2025 (C:\Comunidade_Lendaria_Novembro_2025)
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - __init__:54 - 📁 Pasta de processamento: data\project_workspace\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - __init__:55 - 📁 Pasta de saída: data\project_workspace\Comunidade_Lendaria_Novembro_2025\output_videos
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:83 - 🎯 Iniciando pipeline de publicação para: Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:88 - 📦 Executando etapa 1: Compactação de arquivos
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_zip:172 - 📦 Iniciando compactação de arquivos em: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_zip:179 - ⚙️ Configuração: limite=2000MB, modo=zip
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_zip:180 - 🎬 Extensões de vídeo ignoradas: ['mp4', 'avi', 'webm', 'ts', 'vob', 'mov', 'mkv', 'wmv', '3gp', 'flv', 'ogv', 'ogg', 'rrc', 'gifv', 'mng', 'qt', 'yuv', 'rm', 'asf', 'amv', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'svi', '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b']
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=zipping, last_file=None
+2025-11-13 15:17:07 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=zipping, last_file=
+2025-11-13 15:17:07 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_progress:782 - 📈 Progresso atualizado: zipping - Iniciando compactação
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_zip:194 - ✅ Compactação concluída com sucesso
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_zip:195 - 📁 Arquivos ZIP salvos em: data\project_workspace\Comunidade_Lendaria_Novembro_2025\output_videos
+2025-11-13 15:17:21 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_zipped, status=True
+2025-11-13 15:17:21 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_zipped, status=True
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_step_status:763 - 💾 Status atualizado: is_zipped = True
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:99 - 📊 Executando etapa 2: Geração de relatórios
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:214 - 📊 Iniciando geração de relatório para: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:223 - 📋 Arquivo de relatório: data\project_workspace\Comunidade_Lendaria_Novembro_2025\video_details.csv
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:224 - 🎬 Extensões de vídeo: ['mp4', 'avi', 'webm', 'ts', 'vob', 'mov', 'mkv', 'wmv', '3gp', 'flv', 'ogv', 'ogg', 'rrc', 'gifv', 'mng', 'qt', 'yuv', 'rm', 'asf', 'amv', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'svi', '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b']
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:225 - 🔄 Plano de recodificação: single
+2025-11-13 15:17:21 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=reporting, last_file=None
+2025-11-13 15:17:21 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=reporting, last_file=
+2025-11-13 15:17:21 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_progress:782 - 📈 Progresso atualizado: reporting - Gerando relatório de vídeos
+2025-11-13 15:17:22 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\01 IA Além do Código O Fator Humano que Define o Sucesso do Projeto.mp4
+2025-11-13 15:17:22 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\02 A importância da gestão para o sucesso do projeto.mp4
+2025-11-13 15:17:22 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\03 Canvas Ferramenta histórica de gestão de projetos.mp4
+2025-11-13 15:17:22 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\04 Gerenciamento de projetos de inteligência artificial.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\05 Como preencher o AI Canvas.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\06 Os 7 passos da priorização.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\AI Canvas Como Gerenciar Projetos de IA\07 Operacionalização.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Encontros nao oficiais\Encontro de tráfego - Comércios locais.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Encontros nao oficiais\Tenha 10x mais resultado usando a ferramenta mais poderosa do mundo.mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [01] A Corrida de Ratos[2].mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [02] Descubra como monetizar sua curiosidade[2].mp4
+2025-11-13 15:17:23 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [03] - Zona de Genialidade.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [04] - Disciplina, Constância e Obsessão.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [05] - Marketing Autêntico com Davi Ribas e Jean Alessandro.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Lives e Materiais\Live [06] - Marketing Autêntico com Davi Ribas.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Masterclasses\Masterclass de Make com Davi Ribeiro.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Masterclasses\Masterclass Dify Como criar Clones IA  com Vinicius Oliveira.mp4
+2025-11-13 15:17:24 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Palestra em Masterminds\Heroes  Workshop de Segundo Cérebro.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Palestra em Masterminds\High Ticket (Isis Moreira)  O que é possível com a Mente Lendária.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Palestra em Masterminds\Usina (Thiago Sarinho) - Segundo Cérebro para Criação de Cursos.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Workshops\Workshop Clones IA - 08-10-2025 Parte 1.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Workshops\Workshop Clones IA - 08-10-2025 Parte 2.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Ao vivo\Workshops\Workshop Clones IA - 08-10-2025 Parte 3.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Clone IA Express\01 O que é um Clone IA.mp4
+2025-11-13 15:17:25 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Clone IA Express\03 Criando um Clone IA Básico (GPT Expert).mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Clone IA Express\04 Entendendo Clone IA Básico (Estrutura PREHD).mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Clone IA Express\05 Clone Simples x Profissional (800x8k).mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como construir MicroSaaS\01 Introdução ao MicroSaaS.mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como construir MicroSaaS\02 Mercado do MicroSaaS.mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como construir MicroSaaS\03 Os 4 pilares de um MicroSaaS.mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como construir MicroSaaS\04 Dúvidas sobre MicroSaaS.mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como construir MicroSaaS\05 Biblioteca de cases validados.mp4
+2025-11-13 15:17:26 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 01 – Eles não estão prontos.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 02 – Delegar e delargar.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 03 – 3 Pontos Importantes.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 04 – As 4 fontes que mais uso.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 05 – Procurando diamantes.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 06 – A triagem.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 07 – Dinâmica em grupo.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 08 – A redação.mp4
+2025-11-13 15:17:27 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 09 – Produtos diferentes.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 10 – Resiliência & flexibilidade.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 11 – Ferramenta na prática.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 12 – A explicação.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 13 – Entrevista individual.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 14 – A 5ª fase secreta.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 15 – Após a contratação.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 16 - PARE de rasgar dinheiro.mp4
+2025-11-13 15:17:28 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 17 – Não perca a equipe.mp4
+2025-11-13 15:17:29 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 18 – Liderança é conquistada.mp4
+2025-11-13 15:17:29 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 19 – VALIDE seus indicadores.mp4
+2025-11-13 15:17:30 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 20 – Chapa quente.mp4
+2025-11-13 15:17:30 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 21 – Curva A, B e C.mp4
+2025-11-13 15:17:31 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Como formar equipe de vendas\Aula 22 – Quadros & ações.mp4
+2025-11-13 15:17:31 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 01 - O que você vai aprender.mp4
+2025-11-13 15:17:32 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 02 - Fase de Onboarding.mp4
+2025-11-13 15:17:33 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 03 - Prática - Simulação de Kickoff.mp4
+2025-11-13 15:17:34 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 04 - Tipos de entrega.mp4
+2025-11-13 15:17:35 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 05 - Prática - Simulador de Entregas.mp4
+2025-11-13 15:17:35 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 06 - Iniciação e planejamento do Projeto.mp4
+2025-11-13 15:17:37 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 07 - Execução, Monitoramento e Encerramento.mp4
+2025-11-13 15:17:37 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 08 - Prática - Dashboard PMBOK.mp4
+2025-11-13 15:17:38 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 09 - Empacotando a entrega.mp4
+2025-11-13 15:17:38 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 10 - Ascensão do cliente.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Escalando Negócios com Agentes IA\Aula 11 - Prática - Simulador de Ascensão.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\01 O Método VEC Como Influenciar o Cérebro Trino para Fechar Contratos.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\02 Como Abrir Portas com o Método do Abacaxi.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\03 Como Usar o DISC para Identificar Seu Perfil Vendedor.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\04 Como Influenciar Decisões Ativando o Cérebro Trino.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\05 Como Navegar o Círculo de Vendas para Fechar Contratos de 48 Mil.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\06 Como Conquistar os Três Sins que Precedem o Fechamento.mp4
+2025-11-13 15:17:39 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\07 Como Transformar as Duas Principais Objeções em Oportunidades de Venda.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fechando Contratos Hight Ticket\08 Como Implementar o Método e Acompanhar seus Resultados na Prática.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 01 - Introdução à IA.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 02 - O que é IA generativa.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 03 - Uma tour pelas IAs generativas.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 04 - A técnica por trás da IA generativa.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 05 - Introdução ao Machine Learning, Deep Learning e Redes Neurais.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\01 Introducao a IA Jose Amorim\Aula 06 - Juntando tudo.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 01 - Introdução à Engenharia de Prompts.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 02 - Lógica de programação para não programadores.mp4
+2025-11-13 15:17:40 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 03 - Estruturas e Formatos.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 04 - Técnicas - Zero Shot, Few Shot e CoT.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 05 - Prompt Persona x Prompt Sistema.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 06 - Além do Texto.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 07 - Organizando Prompts (GitHub).mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 08 - Ajustando prompts.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\02 Engenharia de Prompts Day Cavalcanti\Aula 09 - Proposta Projeto Final Icarus.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\01 Do Básico ao Sofisticado Repensando Simplicidade em IA.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\02 O Poder do Papel Desbloqueando sua Criatividade em IA.mp4
+2025-11-13 15:17:41 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\03 Anatomia de um Agente Desmistificando IA com Analogias Humanas.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\04 Do Problema às Ferramentas Seu Cérebro como Modelo de IA.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\05 Desenhando seu Agente Do Problema à Solução no Papel.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\03 Desbloqueando produtos de IA\06 O Momento Eureka Por Que o Banho Desbloqueia Ideias.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\01 Desbloqueio Sua Jornada de Transformação em IA.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\02 Rota Visual Estruturando seu Projeto no Whimsical.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\03 Os 7 passos de um produto de IA 10.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\04 Passo 1 - Definindo o problema.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\05 Passo 2 - Dividindo o problema.mp4
+2025-11-13 15:17:42 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\04 3 Passos que definem seu produto de IA\06 Passo 3 - Analisar o problema.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\05 Os 20% para clareza total\01 Esqueletando o projeto de modelagem.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\05 Os 20% para clareza total\02 Estrutura de modelagem em 4 passos.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\05 Os 20% para clareza total\03 Montando meu projeto único e liberando 100% de clareza.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\05 Os 20% para clareza total\04 Transformando a ideia oficialmente no meu produto.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\06 Claude Code Alan Nicolas\Aula 1 - A no Terminal Sem Medo.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\06 Claude Code Alan Nicolas\Aula 2 - Instalação e Configuração do Claude Code.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\06 Claude Code Alan Nicolas\Aula 3 - Organização de Arquivos com Claude Code.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\06 Claude Code Alan Nicolas\Aula 4 - Comparação com Concorrentes.mp4
+2025-11-13 15:17:43 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\06 Claude Code Alan Nicolas\Aula 5 - Como Obter 2-3× Mais Tokens no Claude Code Sem Paga.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 01 - Visão geral da instalação.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 02 - Instalando EasyPanel.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 03 - Instalando n8n.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 04 - Instalando o Evolution API.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 05 - Instalando o Chatwoot.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 06 - Como funciona API de WhatsAppp.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 07 - Conexão entre Whatsapp e n8n.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 08 - Projeto iniciante Transcrever audio do WhatsApp.mp4
+2025-11-13 15:17:44 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 09 - Entendo o projeto completo.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 10 - Construindo o projeto.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 11 - Diferença entre IA e Automação.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 12 - A lógica da Automação.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 13 - Filtrando curiosos Nodes condicionais.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 14 - Lidando com variaveis.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 15 - Requisição HTT Request.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 16 - Todas as LLMs que você pode usar.mp4
+2025-11-13 15:17:45 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 17 - Passo a passo para todas as LLMs.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 18 - Projeto Final (Parte 1).mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Fluencia em IA\07 Base Fundamental de N8N Jose Amorim\Aula 19 - Projeto Final (Parte 2).mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\01 Introdução à Gestão Comercial.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\02 Como começar do jeito certo e rentável.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\03 A importância do Posicionamento.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\04 Como fazer seu pitch de vendas.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\05 Valor agregado com Imagem Pessoal.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\06 Colhendo Cases pra vender mais.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Gestão Comercial\07 Criando Narrativa para seus Cases.mp4
+2025-11-13 15:17:46 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\01 Introdução ao curso de IA com LangChain.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\02 Models - Explorando Modelos de Linguagem.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\03 Models Modelos de Linguagem - Técnica Avançada.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\04 Prompt Templates - Criação de Prompts Robustos e Eficientes.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\05 Output Parsers - Padronização e Análise de Respostas IA.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\06 Memory - Implementando Memória em Conversas com IA.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\07 Chains - Técnicas de Encadeamento de Prompts.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\LangChain Engenharia de IA Conversacional\08 RouterChains - Roteamento Inteligente de Cadeias de Prompts.mp4
+2025-11-13 15:17:47 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Método Zero To One\01 Por que você precisa entender o Método.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Método Zero To One\02 Fase 1 - Encontre um Mercado para explorar.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Método Zero To One\03 Fase 2 - Valide se tem demanda de Mercado.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Método Zero To One\04 Fase 3 - Coletando dados para o Produto.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Método Zero To One\05 Fase 4 - Criando a landing page para teste.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 01 - Introdução.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 02 - Não pule essa aula Planejamento de Vendas.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 03 - Abordagem e Extração da Necessidade.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 04 - Apresentação da Solução e Negociação.mp4
+2025-11-13 15:17:48 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 05 - Fechamento da Venda.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 06 - Como pedir Indicação.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 07 - Assista Antes da aula de Objeções.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Pereira Amorim\Aula 08 - Contornando as principais Objeções.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\01 Radar de Clientes O Método de Prospecção para Vender Agentes de IA por 48 Mil.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\02 Construindo Conexões Estratégicas.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\03 O Poder das Conexões Diretas.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\04 Multiplicando Oportunidades com Relacionamentos Próximos.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\05 Redes Empresariais Conquistando a Cadeira de IA em Grupos de Networking.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\06 Alianças Estratégicas Transformando Cursos em Parcerias de Negócio.mp4
+2025-11-13 15:17:49 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\07 Palco e Prova Como Palestras Transformam Audiência em Clientes.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\08 Autoridade Digital e Expansão de Mercado.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Prospectando Clientes Ramon Toledo\09 Gerando Oportunidades com Tráfego Pago.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\01 Introdução ao Curso e Fundamentos do RAG.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\02 Arquitetura e Componentes do RAG.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\03 Preparação de Dados para RAG.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\04 Acessando o Langchain.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\05 Importação de Dados com Langchain.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\06 Técnicas Básicas de Divisão Textual.mp4
+2025-11-13 15:17:50 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\07 Técnicas Avançadas de Fragmentação.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\08 Fundamentos de Embeddings.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\09 Criação de Embeddings com Langchain.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\10 Bancos de Dados Vetoriais Conceitos e Implementação.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\11 Indexação e Armazenamento Eficiente de Vetores.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\12 Fundamentos de Recuperação de Conteúdo.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\13 Estratégias Avançadas de Recuperação.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\14 RAG no LabPro.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\RAG\15 Considerações Finais e Futuro do RAG.mp4
+2025-11-13 15:17:51 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 01\Aula 01 - O que é Vibe Coding.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 01\Aula 02 - O que não consigo criar não consigo entender.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 01\Aula 03 - A casa fullstack.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 01\Aula 04 - Os 3 elementos + 1 segredo.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 01\Aula 05 - Desafio de criação.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 06 - Visão dos 5 níveis de VibeCoding.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 07 - Aplicação web com IA.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 08 - Desafio IA no whatsapp.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 09 - Tela de login.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 10 - Prototipando hub de IAs.mp4
+2025-11-13 15:17:52 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 11 - Criando tela de login.mp4
+2025-11-13 15:17:53 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 02\Aula 12 - Tela de login passo a passo.mp4
+2025-11-13 15:17:53 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 03\Aula 13 - Ideias com brainstorm.mp4
+2025-11-13 15:17:53 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 03\Aula 14 - Roube como um artista.mp4
+2025-11-13 15:17:53 - root - [32mINFO[0m - get_list_dict_inf_ffprobe:140 - Catching video metadata: C:\Comunidade_Lendaria_Novembro_2025\Vibe Coding\Modulo 03\Aula 15 - Criando minha metodologia.mp4
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:238 - ✅ Relatório gerado com sucesso: data\project_workspace\Comunidade_Lendaria_Novembro_2025\video_details.csv
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_report:239 - 📝 Você pode editar o arquivo para ajustar o plano de recodificação
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_reported, status=True
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_reported, status=True
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_step_status:763 - 💾 Status atualizado: is_reported = True
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:110 - 🎬 Executando etapa 3: Recodificação de vídeos
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:258 - 🎬 Iniciando recodificação de vídeos para: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:267 - 📋 Arquivo de relatório: data\project_workspace\Comunidade_Lendaria_Novembro_2025\video_details.csv
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:268 - 🎬 Pasta de vídeos recodificados: data\project_workspace\Comunidade_Lendaria_Novembro_2025\videos_encoded
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=reencoding, last_file=None
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=reencoding, last_file=
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_progress:782 - 📈 Progresso atualizado: reencoding - Recodificando vídeos
+2025-11-13 15:17:53 - root - [32mINFO[0m - make_reencode:286 - 
+There are no videos to reencode
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:275 - ✅ Recodificação de vídeos concluída
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:283 - ✅ Recodificação concluída com sucesso
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_reencode:284 - 📁 Vídeos recodificados salvos em: data\project_workspace\Comunidade_Lendaria_Novembro_2025\videos_encoded
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_reencoded, status=True
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_reencoded, status=True
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_step_status:763 - 💾 Status atualizado: is_reencoded = True
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:121 - 🔗 Executando etapa 4: Junção de arquivos
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:304 - 🔗 Iniciando etapa de junção/finalização para: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:326 - 📋 Arquivo de relatório: data\project_workspace\Comunidade_Lendaria_Novembro_2025\video_details.csv
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:327 - 🔄 Plano de processamento: single
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=joining, last_file=None
+2025-11-13 15:17:53 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=joining, last_file=
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_progress:782 - 📈 Progresso atualizado: joining - Iniciando junção/finalização de vídeos
+2025-11-13 15:17:53 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:332 - ✂️ Verificando e dividindo vídeos grandes conforme o plano
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:339 - ✅ Verificação de divisão de vídeos concluída
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:361 - 📋 Modo 'single': Finalizando arquivos de vídeo individuais
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 IA Além do Código O Fator Humano que Define o Sucesso do Projeto.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 A importância da gestão para o sucesso do projeto.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Canvas Ferramenta histórica de gestão de projetos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Gerenciamento de projetos de inteligência artificial.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Como preencher o AI Canvas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Os 7 passos da priorização.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Operacionalização.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Encontro de tráfego - Comércios locais.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Encontro de tráfego - Comércios locais.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Tenha 10x mais resultado usando a ferramenta mais poderosa do mundo.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [01] A Corrida de Ratos[2].mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [02] Descubra como monetizar sua curiosidade[2].mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [02] Descubra como monetizar sua curiosidade[2].mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [03] - Zona de Genialidade.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [03] - Zona de Genialidade.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [04] - Disciplina, Constância e Obsessão.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [04] - Disciplina, Constância e Obsessão.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [04] - Disciplina, Constância e Obsessão.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [05] - Marketing Autêntico com Davi Ribas e Jean Alessandro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [05] - Marketing Autêntico com Davi Ribas e Jean Alessandro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [06] - Marketing Autêntico com Davi Ribas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Live [06] - Marketing Autêntico com Davi Ribas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Masterclass de Make com Davi Ribeiro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Masterclass Dify Como criar Clones IA  com Vinicius Oliveira.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Heroes  Workshop de Segundo Cérebro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Heroes  Workshop de Segundo Cérebro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'High Ticket (Isis Moreira)  O que é possível com a Mente Lendária.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Usina (Thiago Sarinho) - Segundo Cérebro para Criação de Cursos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Workshop Clones IA - 08-10-2025 Parte 1.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Workshop Clones IA - 08-10-2025 Parte 2.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Workshop Clones IA - 08-10-2025 Parte 3.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 O que é um Clone IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Criando um Clone IA Básico (GPT Expert).mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Entendendo Clone IA Básico (Estrutura PREHD).mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Clone Simples x Profissional (800x8k).mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Introdução ao MicroSaaS.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Mercado do MicroSaaS.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Os 4 pilares de um MicroSaaS.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Dúvidas sobre MicroSaaS.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Biblioteca de cases validados.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 – Eles não estão prontos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 – Delegar e delargar.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 – 3 Pontos Importantes.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 – As 4 fontes que mais uso.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 – Procurando diamantes.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 – A triagem.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 – Dinâmica em grupo.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 – A redação.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 09 – Produtos diferentes.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 10 – Resiliência & flexibilidade.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 11 – Ferramenta na prática.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 12 – A explicação.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 13 – Entrevista individual.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 14 – A 5ª fase secreta.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 15 – Após a contratação.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 16 - PARE de rasgar dinheiro.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 17 – Não perca a equipe.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 18 – Liderança é conquistada.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 19 – VALIDE seus indicadores.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 20 – Chapa quente.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 21 – Curva A, B e C.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 22 – Quadros & ações.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - O que você vai aprender.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - Fase de Onboarding.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - Prática - Simulação de Kickoff.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - Tipos de entrega.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Prática - Simulador de Entregas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Iniciação e planejamento do Projeto.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 - Execução, Monitoramento e Encerramento.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 - Prática - Dashboard PMBOK.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 09 - Empacotando a entrega.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 10 - Ascensão do cliente.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 11 - Prática - Simulador de Ascensão.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 O Método VEC Como Influenciar o Cérebro Trino para Fechar Contratos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Como Abrir Portas com o Método do Abacaxi.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Como Usar o DISC para Identificar Seu Perfil Vendedor.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Como Influenciar Decisões Ativando o Cérebro Trino.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Como Navegar o Círculo de Vendas para Fechar Contratos de 48 Mil.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Como Conquistar os Três Sins que Precedem o Fechamento.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Como Transformar as Duas Principais Objeções em Oportunidades de Venda.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '08 Como Implementar o Método e Acompanhar seus Resultados na Prática.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - Introdução à IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - O que é IA generativa.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - Uma tour pelas IAs generativas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - A técnica por trás da IA generativa.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Introdução ao Machine Learning, Deep Learning e Redes Neurais.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Juntando tudo.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - Introdução à Engenharia de Prompts.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - Lógica de programação para não programadores.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - Estruturas e Formatos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - Técnicas - Zero Shot, Few Shot e CoT.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Prompt Persona x Prompt Sistema.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Além do Texto.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 - Organizando Prompts (GitHub).mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 - Ajustando prompts.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 09 - Proposta Projeto Final Icarus.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Do Básico ao Sofisticado Repensando Simplicidade em IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 O Poder do Papel Desbloqueando sua Criatividade em IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Anatomia de um Agente Desmistificando IA com Analogias Humanas.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Do Problema às Ferramentas Seu Cérebro como Modelo de IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Desenhando seu Agente Do Problema à Solução no Papel.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 O Momento Eureka Por Que o Banho Desbloqueia Ideias.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Desbloqueio Sua Jornada de Transformação em IA.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Rota Visual Estruturando seu Projeto no Whimsical.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Os 7 passos de um produto de IA 10.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Passo 1 - Definindo o problema.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Passo 2 - Dividindo o problema.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Passo 3 - Analisar o problema.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Esqueletando o projeto de modelagem.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Estrutura de modelagem em 4 passos.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Montando meu projeto único e liberando 100% de clareza.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Transformando a ideia oficialmente no meu produto.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 1 - A no Terminal Sem Medo.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 2 - Instalação e Configuração do Claude Code.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 3 - Organização de Arquivos com Claude Code.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 4 - Comparação com Concorrentes.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 5 - Como Obter 2-3× Mais Tokens no Claude Code Sem Paga.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - Visão geral da instalação.mp4'
+2025-11-13 15:40:02 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - Instalando EasyPanel.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - Instalando n8n.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - Instalando o Evolution API.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Instalando o Chatwoot.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Como funciona API de WhatsAppp.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 - Conexão entre Whatsapp e n8n.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 - Projeto iniciante Transcrever audio do WhatsApp.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 09 - Entendo o projeto completo.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 10 - Construindo o projeto.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 11 - Diferença entre IA e Automação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 12 - A lógica da Automação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 13 - Filtrando curiosos Nodes condicionais.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 14 - Lidando com variaveis.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 15 - Requisição HTT Request.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 16 - Todas as LLMs que você pode usar.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 17 - Passo a passo para todas as LLMs.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 18 - Projeto Final (Parte 1).mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 19 - Projeto Final (Parte 2).mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Introdução à Gestão Comercial.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Como começar do jeito certo e rentável.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 A importância do Posicionamento.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Como fazer seu pitch de vendas.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Valor agregado com Imagem Pessoal.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Colhendo Cases pra vender mais.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Criando Narrativa para seus Cases.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Introdução ao curso de IA com LangChain.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Models - Explorando Modelos de Linguagem.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Models Modelos de Linguagem - Técnica Avançada.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Prompt Templates - Criação de Prompts Robustos e Eficientes.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Output Parsers - Padronização e Análise de Respostas IA.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Memory - Implementando Memória em Conversas com IA.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Chains - Técnicas de Encadeamento de Prompts.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '08 RouterChains - Roteamento Inteligente de Cadeias de Prompts.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Por que você precisa entender o Método.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Fase 1 - Encontre um Mercado para explorar.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Fase 2 - Valide se tem demanda de Mercado.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Fase 3 - Coletando dados para o Produto.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Fase 4 - Criando a landing page para teste.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - Introdução.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - Não pule essa aula Planejamento de Vendas.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - Abordagem e Extração da Necessidade.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - Apresentação da Solução e Negociação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Fechamento da Venda.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Como pedir Indicação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 - Assista Antes da aula de Objeções.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 - Contornando as principais Objeções.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Radar de Clientes O Método de Prospecção para Vender Agentes de IA por 48 Mil.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Construindo Conexões Estratégicas.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 O Poder das Conexões Diretas.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Multiplicando Oportunidades com Relacionamentos Próximos.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Redes Empresariais Conquistando a Cadeira de IA em Grupos de Networking.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Alianças Estratégicas Transformando Cursos em Parcerias de Negócio.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Palco e Prova Como Palestras Transformam Audiência em Clientes.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '08 Autoridade Digital e Expansão de Mercado.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '09 Gerando Oportunidades com Tráfego Pago.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '01 Introdução ao Curso e Fundamentos do RAG.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '02 Arquitetura e Componentes do RAG.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '03 Preparação de Dados para RAG.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '04 Acessando o Langchain.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '05 Importação de Dados com Langchain.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '06 Técnicas Básicas de Divisão Textual.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '07 Técnicas Avançadas de Fragmentação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '08 Fundamentos de Embeddings.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '09 Criação de Embeddings com Langchain.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '10 Bancos de Dados Vetoriais Conceitos e Implementação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '11 Indexação e Armazenamento Eficiente de Vetores.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '12 Fundamentos de Recuperação de Conteúdo.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '13 Estratégias Avançadas de Recuperação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '14 RAG no LabPro.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para '15 Considerações Finais e Futuro do RAG.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 01 - O que é Vibe Coding.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 02 - O que não consigo criar não consigo entender.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 03 - A casa fullstack.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 04 - Os 3 elementos + 1 segredo.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 05 - Desafio de criação.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 06 - Visão dos 5 níveis de VibeCoding.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 07 - Aplicação web com IA.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 08 - Desafio IA no whatsapp.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 09 - Tela de login.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 10 - Prototipando hub de IAs.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 11 - Criando tela de login.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 12 - Tela de login passo a passo.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 13 - Ideias com brainstorm.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 14 - Roube como um artista.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [33mWARNING[0m - _step_join:411 -   -> Arquivo original não encontrado para 'Aula 15 - Criando minha metodologia.mp4'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:414 - 📥 Copiando 0 arquivos finais para 'data\project_workspace\Comunidade_Lendaria_Novembro_2025\output_videos'
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:423 - ✅ Finalização do modo 'single' concluída.
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:425 - ✅ Etapa de junção/finalização concluída com sucesso
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_join:426 - 📁 Arquivos finais prontos em: data\project_workspace\Comunidade_Lendaria_Novembro_2025\output_videos
+2025-11-13 15:40:03 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_joined, status=True
+2025-11-13 15:40:03 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_step - source_folder=C:\Comunidade_Lendaria_Novembro_2025, step_flag=is_joined, status=True
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_step_status:763 - 💾 Status atualizado: is_joined = True
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - run:132 - ⏰ Executando etapa 5: Adição de timestamps
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:447 - ⏰ Iniciando geração de timestamps para: C:\Comunidade_Lendaria_Novembro_2025
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:471 - 📋 Arquivo de relatório: data\project_workspace\Comunidade_Lendaria_Novembro_2025\video_details.csv
+2025-11-13 15:40:03 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:472 - 📊 Configuração: hashtag_index=F, start_index=1
+2025-11-13 15:40:03 - clonechat.database - [32mINFO[0m - log_operation_start:124 - 🚀 Starting update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=timestamping, last_file=None
+2025-11-13 15:40:04 - clonechat.database - [32mINFO[0m - log_operation_success:130 - ✅ Completed update_publish_task_progress - source_folder=C:\Comunidade_Lendaria_Novembro_2025, current_step=timestamping, last_file=
+2025-11-13 15:40:04 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _update_progress:782 - 📈 Progresso atualizado: timestamping - Gerando timestamps e descrições
+2025-11-13 15:40:04 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:488 - 📋 Encontrados 1 arquivos ZIP para upload
+2025-11-13 15:40:04 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:586 - 📋 Criando plano de upload com 1 arquivos
+2025-11-13 15:40:04 - clonechat.tasks.publish_pipeline - [32mINFO[0m - _step_timestamp:593 - ✅ Plano de upload criado: data\project_workspace\Comunidade_Lendaria_Novembro_2025\upload_plan.csv
+2025-11-13 16:37:56 - clonechat.tasks.publish_pipeline - [31mERROR[0m - _step_timestamp:633 - ❌ Erro durante geração de timestamps: 
+2025-11-13 16:37:56 - clonechat.tasks.publish_pipeline - [31mERROR[0m - run:136 - ❌ Falha na etapa de adição de timestamps
+2025-11-13 16:37:56 - clonechat.cli - [31mERROR[0m - run_publish_async:888 - ❌ Pipeline de publicação falhou
+2025-11-13 16:37:56 - clonechat.cli - [31mERROR[0m - run_publish_async:892 - ❌ Erro na operação de publicação: 1
